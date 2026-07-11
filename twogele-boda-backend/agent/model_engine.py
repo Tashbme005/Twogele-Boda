@@ -41,14 +41,11 @@ class ModelEngine:
 
     def _build_config(self) -> types.GenerateContentConfig:
         """Google AI Studio settings, tuned for safety-incident reporting."""
-        # MEDIUM thinking + no search tools: faster / more reliable on Render free tier.
-        thinking = (os.getenv("GEMMA_THINKING_LEVEL") or "MEDIUM").strip().upper()
+        # Do not set thinking_config — gemma-4-26b-a4b-it rejects thinking_level.
+        # Chain-of-thought still comes from <|think|> tags in the system prompt.
         return types.GenerateContentConfig(
             temperature=0.6,
             top_p=0.85,
-            thinking_config=types.ThinkingConfig(
-                thinking_level=thinking,
-            ),
             safety_settings=[
                 types.SafetySetting(
                     category="HARM_CATEGORY_HARASSMENT",
