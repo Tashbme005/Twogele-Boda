@@ -7,7 +7,7 @@ export const LANGUAGES = [
 export const LANGUAGE_NAMES = {
   en: 'English',
   lg: 'Luganda',
-  sw: 'Swahili (Kiswahili)',
+  sw: 'Kiswahili',
 }
 
 const dict = {

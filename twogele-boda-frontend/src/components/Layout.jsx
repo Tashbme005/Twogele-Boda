@@ -26,7 +26,7 @@ export default function Layout() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { user, signOut, riderId } = useAuth()
-  const { t, language, setLanguage, languages } = useLanguage()
+  const { t, language, setLanguage, languages, languageName } = useLanguage()
   const emergency = pathname.startsWith('/app/emergency')
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_KEY)
@@ -161,7 +161,7 @@ export default function Layout() {
               onClick={() => toggleMenu('lang')}
             >
               <Icon name="translate" />
-              <span className="lang-code">{language.toUpperCase()}</span>
+              <span className="lang-code">{languageName}</span>
             </button>
             {menu === 'lang' && (
               <div className="top-menu" role="menu">
