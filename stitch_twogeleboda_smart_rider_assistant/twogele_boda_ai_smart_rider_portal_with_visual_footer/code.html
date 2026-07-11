@@ -1,0 +1,351 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head><!--UIPATH_EXTENSION_ID: conkfbpnllelocpogdmbilgmnkabjfmf--><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><!--UIPATH_EXTENSION_ID: conkfbpnllelocpogdmbilgmnkabjfmf--><script id="tailwind-config">try{
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#855300",
+                    "outline-variant": "#d8c3ad",
+                    "on-surface": "#1c1c18",
+                    "surface-container-highest": "#e5e2dc",
+                    "inverse-primary": "#ffb95f",
+                    "background": "#fcf9f2",
+                    "surface-bright": "#fcf9f2",
+                    "on-secondary-container": "#794227",
+                    "primary-container": "#f59e0b",
+                    "surface-variant": "#e5e2dc",
+                    "secondary": "#895033",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container": "#f0eee7",
+                    "tertiary-fixed": "#ede3b8",
+                    "on-primary-fixed": "#2a1700",
+                    "tertiary-fixed-dim": "#d1c79d",
+                    "secondary-container": "#feb28f",
+                    "on-tertiary-fixed-variant": "#4d4727",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#ffdbcc",
+                    "primary": "#855300",
+                    "on-primary-fixed-variant": "#653e00",
+                    "tertiary-container": "#bab189",
+                    "surface-dim": "#dcdad3",
+                    "primary-fixed-dim": "#ffb95f",
+                    "on-secondary-fixed-variant": "#6d391e",
+                    "on-tertiary-fixed": "#201c02",
+                    "error-container": "#ffdad6",
+                    "surface-container-high": "#ebe8e1",
+                    "surface-container-low": "#f6f3ec",
+                    "surface": "#fcf9f2",
+                    "on-surface-variant": "#534434",
+                    "outline": "#867461",
+                    "on-secondary-fixed": "#351000",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#f3f0ea",
+                    "secondary-surface": "#31312c",
+                    "on-tertiary-container": "#4a4424",
+                    "on-error-container": "#93000a",
+                    "on-background": "#1c1c18",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#ffddb8",
+                    "tertiary": "#665f3d",
+                    "on-primary-container": "#613b00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "base": "8px",
+                    "md": "24px",
+                    "sm": "12px",
+                    "gutter": "16px",
+                    "xl": "64px",
+                    "lg": "40px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "48px"
+            },
+            "fontFamily": {
+                    "body-md": ["Be Vietnam Pro"],
+                    "label-sm": ["Be Vietnam Pro"],
+                    "headline-xl": ["Plus Jakarta Sans"],
+                    "body-lg": ["Be Vietnam Pro"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "label-md": ["Be Vietnam Pro"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    }catch(_e){}</script><meta charset="utf-8"></head><body class="bg-background text-on-background font-body-md min-h-screen pb-24">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-margin-mobile h-16 md:px-margin-desktop shadow-sm bg-surface">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 font-headline-md text-headline-md font-extrabold text-primary">
+<span class="material-symbols-outlined text-3xl" data-icon="moped">moped</span>
+<span class="">Twogele Boda AI</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-md text-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Gemma 4 Engine Connected
+            </span>
+<div class="flex gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Side Navigation (Desktop Only) -->
+<aside class="hidden md:flex flex-col fixed left-0 top-16 h-[calc(100vh-4rem)] w-72 p-gutter bg-surface-container-low border-r border-outline-variant">
+<div class="mb-lg px-2">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Rider Portal</h2>
+<p class="text-on-surface-variant text-label-sm">Kampala District</p>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="emergency">emergency</span>
+<span class="">Emergency Dispatch</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+<span class="">Financial Insights</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="savings">savings</span>
+<span class="">Wealth Planner</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="">Settings</span>
+</a>
+</nav>
+<div class="mt-auto p-4 rounded-xl bg-primary-container/10 border border-primary/20">
+<p class="text-xs font-bold text-primary mb-1">RIDER SAFETY TIP</p>
+<p class="text-sm text-on-surface-variant">Wear high-visibility gear during evening rain in Kampala.</p>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-margin-mobile md:pr-margin-desktop max-w-7xl mx-auto md:pl-[20rem]">
+<!-- Header Section -->
+<section class="mb-lg">
+<div class="flex flex-col gap-1">
+<h1 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl text-on-surface relative bg-background">TWOGELE BODA</h1>
+<p class="text-body-lg text-on-surface-variant">Kampala Boda hub for Safety &amp; Livelihoods</p>
+</div>
+</section>
+<!-- Unified Input Matrix -->
+<section class="mb-lg">
+<div class="bg-surface-container-lowest rounded-xl shadow-warm p-md border border-outline-variant/10">
+<div class="flex flex-col gap-4">
+<label class="font-label-md text-primary uppercase tracking-wider">Smart Dispatch &amp; Ledger Input</label>
+<textarea class="w-full h-32 p-4 bg-surface-container-low border-outline-variant/30 rounded-lg focus:ring-primary focus:border-primary text-body-md resize-none" placeholder="Enter or speak text (e.g., 'Mwana I used 22k for fuel today' OR 'Terrible pothole on Jinja Road near traffic lights')"></textarea>
+<div class="flex gap-4">
+<button class="flex-1 bg-primary-container text-on-primary-container py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:brightness-95 active:scale-[0.98] transition-all shadow-md">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+                            Process with Gemma 4
+                        </button>
+<button class="w-16 h-16 bg-surface-container-high text-primary rounded-xl flex items-center justify-center hover:bg-primary-fixed transition-colors active:scale-90 border border-outline-variant/20 shadow-sm">
+<span class="material-symbols-outlined text-2xl" data-icon="mic" style="font-variation-settings: &quot;FILL&quot; 1;">mic</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Dual-Track System Outputs -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter lg:gap-lg">
+<!-- TRACK 1: Safety & Incident Dispatch Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-warm border-l-8 border-error overflow-hidden transition-all hover:scale-[1.01]">
+<div class="p-md">
+<div class="flex items-center justify-between mb-sm">
+<h3 class="font-headline-md text-headline-md text-error flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+                            TRACK 1: Safety &amp; Incident Dispatch
+                        </h3>
+<span class="px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-md animate-pulse">CRITICAL</span>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-lg">
+<div class="bg-surface-container-low p-3 rounded-lg">
+<p class="text-label-sm text-on-surface-variant uppercase">Hazard Type</p>
+<p class="font-bold text-on-surface">Severe Roadway Flooding</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg">
+<p class="text-label-sm text-on-surface-variant uppercase">Location</p>
+<p class="font-bold text-on-surface">Clock Tower Roundabout</p>
+</div>
+</div>
+<div class="relative rounded-xl overflow-hidden mb-lg h-40">
+<div class="w-full h-full bg-cover bg-center" data-alt="A detailed aerial map of Clock Tower Roundabout in Kampala, Uganda, during a heavy tropical storm. The roads are visibly flooded with dark brown rainwater. Traffic is congested with boda-bodas and vehicles. The overall tone is urgent and atmospheric, with muted colors and rainy textures to match the urban safety theme." style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuATLuWjJIQNoztbpnr_QooUW46JZzLCOQuWEqzaOE8Q26Cg4D4-LZfQBfBjjfaZxBO9_6mSGYl-zHANwEBj-Pceyv7T_dvRvHx1CTuTt6iQkmo4H2I7tTuBuXbJ2qhAGwNwhJdNg5HSt0V3Mg2sfeoM-usl_61GCHGxuRfhXT6xTGvkKrG8Co4xZM43ijo9ebGlbLx9OTklUoJduFt1z9IwvqakZkOx2n3QPy6XIHWJn1KgYLZxQyjY&quot;);"></div>
+<div class="absolute inset-0 bg-error/10 mix-blend-multiply"></div>
+<div class="absolute bottom-2 right-2 bg-surface px-2 py-1 rounded-md shadow-sm text-xs font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="location_on">location_on</span>
+                            Kampala, Central
+                        </div>
+</div>
+<div class="bg-error-container/20 border border-error/20 p-4 rounded-xl flex gap-3">
+<span class="material-symbols-outlined text-error" data-icon="policy">policy</span>
+<div>
+<p class="font-label-md text-error">Assigned Authority</p>
+<p class="text-on-surface-variant text-sm">KCCA Engineering &amp; Uganda Traffic Police.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- TRACK 2: Smart Bookkeeping Ledger & Wealth Planner Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-warm border-l-8 border-emerald-600 overflow-hidden transition-all hover:scale-[1.01]">
+<div class="p-md">
+<div class="flex items-center justify-between mb-sm">
+<h3 class="font-headline-md text-headline-md text-emerald-700 flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+                            TRACK 2: Wealth Planner
+                        </h3>
+<span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-md">VERIFIED</span>
+</div>
+<!-- -->
+<div class="mb-gutter">
+<p class="text-label-sm text-on-surface-variant uppercase mb-2">Real-time Ledger Entry</p>
+<div class="bg-zinc-900 rounded-lg p-4 ledger-code text-emerald-400 text-sm shadow-inner">
+<pre><code>{
+  "Fuel expenses": 22000,
+  "Daily expenses": 5000,
+  "Income saved": 15000
+}</code></pre>
+</div>
+</div>
+<!-- Sub-component B: Insights -->
+<div class="flex items-center gap-4 bg-emerald-50 border border-emerald-100 p-4 rounded-xl mb-gutter">
+<div class="w-12 h-12 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined" data-icon="show_chart">show_chart</span>
+</div>
+<div>
+<p class="text-label-sm text-emerald-800 uppercase">Monthly Savings Projection</p>
+<p class="text-headline-md font-extrabold text-emerald-900">450,000 UGX</p>
+</div>
+</div>
+<!-- Sub-component C: Advisory Badges -->
+<div>
+<p class="text-label-sm text-on-surface-variant uppercase mb-3">Suggested Investment Options</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-2 rounded-full bg-surface-container-high border border-outline-variant/30 text-sm font-semibold flex items-center gap-2 hover:bg-emerald-600 hover:text-white transition-colors cursor-pointer">
+<span class="">🌿</span> Boda-Boda Cooperative SACCOs
+                            </span>
+<span class="px-3 py-2 rounded-full bg-surface-container-high border border-outline-variant/30 text-sm font-semibold flex items-center gap-2 hover:bg-emerald-600 hover:text-white transition-colors cursor-pointer">
+<span class="">📈</span> MTN/Airtel 11% Fund
+                            </span>
+<span class="px-3 py-2 rounded-full bg-surface-container-high border border-outline-variant/30 text-sm font-semibold flex items-center gap-2 hover:bg-emerald-600 hover:text-white transition-colors cursor-pointer">
+<span class="">🏛️</span> UG Treasury Bills
+                            </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Extra Feature: Kampala Map View -->
+<section class="mt-lg">
+<div class="bg-surface-container-lowest rounded-xl shadow-warm p-md border border-outline-variant/10">
+<div class="flex items-center justify-between mb-sm">
+<h4 class="font-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+                        Active Hotspots
+                    </h4>
+<button class="text-primary font-bold text-sm hover:underline">View Full Map</button>
+</div>
+<div class="h-64 bg-surface-container rounded-xl overflow-hidden relative">
+<div class="w-full h-full bg-cover bg-center" data-alt="A clean, minimalist vector-style map of Kampala, Uganda. The map uses a warm cream and brown color palette. Small icons representing boda-boda riders are scattered across key locations like Wandegeya, Jinja Road, and Katwe. Soft glowing amber circles indicate high-demand hotspots. The interface design is professional, friendly, and legible." style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuB0LrsTqcCPK8ZUiYxdGf2h0U463ifRBNesPaVy8EtW-ocvkFJ2CsC8lEcWTnu51XiWANWYv7Fhx-LrGarnN4kVJJl3o8AJV6MJyKbxI6qjd26Ycq-DnDNFKGfZm7Yt_3H_oiw01HtKAI54bhy7KKglYbspCy77zIdhGr3zk_A6sMyGvnBle1UfUzpVoA9gv32FRFp_0FtK0178vwSnwFBwEzZ8VBhLrsG8l_mw4IfMFm5JOhR-neP2&quot;);"></div>
+<div class="absolute top-4 right-4 flex flex-col gap-2">
+<div class="bg-surface/90 backdrop-blur shadow-sm p-2 rounded-lg text-xs font-bold border border-outline-variant/20">
+                            🟢 High Demand: Katwe
+                        </div>
+<div class="bg-surface/90 backdrop-blur shadow-sm p-2 rounded-lg text-xs font-bold border border-outline-variant/20">
+                            🔴 Hazard: Clock Tower
+                        </div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="mt-xl py-lg text-center border-t border-outline-variant/20"><section class="mb-xl h-64 rounded-xl overflow-hidden relative shadow-sm border border-outline-variant/20 w-full">
+<div class="bg-cover bg-center w-full h-full opacity-60" data-alt="A cinematic, high-contrast wide shot of Kampala's bustling streets at sunset, featuring a focused Boda Boda rider skillfully navigating through traffic." style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCqOHtvEKibVJXGP0PJfNMj5U8j_LQ59GYQyaSahUM-7SjqCxAMKTqhxhL_qLVEHAt2-FYwcn_PP-Wk0fwO4bmkODpOIx-3AgAL-mHuehgKjGYfUrbwYMrUnPlSb6HxjnKpgk0PT0zSepFalXmNRj3Uf0nizGrerDl7im97jJY8TwqoL7UGVjw6GrMtzUJjFBH-6WwTORkDW91Gt_WPirRHKZBYOUAMl5zRJrxG6fdoNzCgeeHjnou7&quot;);"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+<div class="absolute bottom-6 left-6 max-w-lg text-left">
+<p class="text-headline-lg-mobile font-extrabold text-on-background">Empowering Kampala's Boda community</p>
+<p class="text-body-md text-on-surface-variant">Built with gemma for the modern Ugandan&nbsp; boda guy.</p>
+</div>
+</section>
+<p class="text-on-surface-variant text-sm max-w-2xl mx-auto italic">
+                Assistive prototype only. Not an official emergency dispatch, legal, or authoritative financial advisory system. Developed for Build with Gemma Uganda.
+            </p>
+<div class="mt-4 flex justify-center gap-6 grayscale opacity-50">
+<div class="flex items-center gap-1 font-bold">KCCA</div>
+<div class="flex items-center gap-1 font-bold">GEMMA</div>
+<div class="flex items-center gap-1 font-bold">BUILD-UG</div>
+</div>
+</footer>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe shadow-[0_-4px_12px_rgba(69,26,3,0.08)] bg-surface rounded-t-xl">
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1.5 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="moped" style="font-variation-settings: &quot;FILL&quot; 1;">moped</span>
+<span class="text-[10px] font-bold">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors active:scale-90">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="text-[10px]">Safety</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors active:scale-90">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="text-[10px]">Ledger</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors active:scale-90">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[10px]">Profile</span>
+</button>
+</nav>
+<!-- Floating Action Button Contextual -->
+<button class="fixed bottom-24 right-4 md:bottom-8 md:right-8 w-14 h-14 bg-primary-container text-on-primary-container rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform md:hidden">
+<span class="material-symbols-outlined text-3xl" data-icon="add">add</span>
+</button>
+<script>
+        // Simple micro-interaction for the textarea
+        const textarea = document.querySelector('textarea');
+        textarea.addEventListener('focus', () => {
+            textarea.parentElement.parentElement.classList.add('ring-2', 'ring-primary/20');
+        });
+        textarea.addEventListener('blur', () => {
+            textarea.parentElement.parentElement.classList.remove('ring-2', 'ring-primary/20');
+        });
+
+        // Hover effect for the process button
+        const processBtn = document.querySelector('button.bg-primary-container');
+        processBtn.addEventListener('mouseenter', () => {
+            processBtn.querySelector('span').classList.add('animate-bounce');
+        });
+        processBtn.addEventListener('mouseleave', () => {
+            processBtn.querySelector('span').classList.remove('animate-bounce');
+        });
+    </script>
+
+
+</body></html>

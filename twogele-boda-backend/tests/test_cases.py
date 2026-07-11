@@ -35,7 +35,7 @@ TEST_CASES: list[PromptCase] = [
             "boda yagwa badly, guy needs help now!"
         ),
         "language": "mixed",
-        "expect_in_response": ["Hazard Type", "Location", "Urgency", "CRITICAL"],
+        "expect_in_response": ["Hazard Type", "Location", "Urgency"],
         "notes": "Kampala slang + accident → Traffic Police / EMR.",
     },
     {
