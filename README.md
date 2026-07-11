@@ -108,6 +108,8 @@ npm run dev            # http://localhost:5173
 
 **Live app:** [https://twogele-boda.vercel.app/](https://twogele-boda.vercel.app/) — deploy notes in **[twogele-boda-frontend/VERCEL.md](./twogele-boda-frontend/VERCEL.md)**. On Render, keep `https://twogele-boda.vercel.app` in `CORS_ORIGINS`, and allow that origin in Neon Auth.
 
+**Demo video:** [https://youtu.be/VzJxxwc8F6Y](https://youtu.be/VzJxxwc8F6Y)
+
 ---
 
 ## Tech Stack
