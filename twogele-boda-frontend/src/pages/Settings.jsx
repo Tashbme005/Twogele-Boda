@@ -11,20 +11,20 @@ export default function Settings() {
   const [language, setLanguage] = useState('en')
   const [safetyAlerts, setSafetyAlerts] = useState(true)
   const [financeAlerts, setFinanceAlerts] = useState(true)
-  const [battery, setBattery] = useState('Balanced')
+  const [battery, setBattery] = useState('Normal')
   const [routing, setRouting] = useState(true)
 
   return (
     <>
       <section className="page-head">
-        <h1>Settings</h1>
-        <p>Manage your account, vehicle info, and AI preferences.</p>
+        <h1>My details</h1>
+        <p>Change your name, bike, and alerts.</p>
       </section>
 
       <div className="settings-grid">
         <section className="panel">
           <h3 className="card-title">
-            <Icon name="person" /> Profile Management
+            <Icon name="person" /> About you
           </h3>
           <label className="field">
             <span>Full Name</span>
@@ -76,9 +76,9 @@ export default function Settings() {
           </h3>
           <div className="settings-row">
             <div>
-              <strong>Safety Alerts</strong>
+              <strong>Danger alerts</strong>
               <p className="empty-note" style={{ margin: '0.2rem 0 0' }}>
-                Real-time traffic and hazard warnings
+                Tell me about bad roads and jams
               </p>
             </div>
             <button
@@ -91,9 +91,9 @@ export default function Settings() {
           </div>
           <div className="settings-row">
             <div>
-              <strong>Financial Summaries</strong>
+              <strong>Money updates</strong>
               <p className="empty-note" style={{ margin: '0.2rem 0 0' }}>
-                Daily and weekly earnings reports
+                Daily and weekly money summary
               </p>
             </div>
             <button
@@ -108,30 +108,29 @@ export default function Settings() {
 
         <section className="panel gemma-card">
           <h3 className="card-title">
-            <Icon name="bolt" /> Gemma 4 Engine{' '}
+            <Icon name="bolt" /> Smart help{' '}
             <span className="badge critical" style={{ marginLeft: '0.5rem' }}>
-              EXPERIMENTAL
+              NEW
             </span>
           </h3>
           <div className="tip-card" style={{ marginBottom: '1rem' }}>
             <p style={{ margin: 0 }}>
-              Advanced ride prediction and customer demand heatmaps. Powered by local LLM
-              optimization.
+              Helps you find busy places and safer roads in Kampala.
             </p>
           </div>
           <label className="field">
-            <span>Optimize Battery Usage</span>
+            <span>Phone battery</span>
             <select value={battery} onChange={(e) => setBattery(e.target.value)}>
-              <option>Balanced</option>
-              <option>Performance</option>
-              <option>Power Saver</option>
+              <option>Normal</option>
+              <option>Strong</option>
+              <option>Save battery</option>
             </select>
           </label>
           <div className="settings-row">
             <div>
-              <strong>Predictive Routing</strong>
+              <strong>Safer routes</strong>
               <p className="empty-note" style={{ margin: '0.2rem 0 0' }}>
-                Suggest safer Kampala corridors
+                Suggest better roads in Kampala
               </p>
             </div>
             <button
@@ -147,10 +146,10 @@ export default function Settings() {
 
       <div className="settings-actions">
         <button className="btn-primary" type="button">
-          <Icon name="save" /> Save Changes
+          <Icon name="save" /> Save
         </button>
         <button className="btn-outline" type="button">
-          Discard Changes
+          Cancel
         </button>
       </div>
     </>

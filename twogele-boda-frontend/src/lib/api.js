@@ -6,13 +6,23 @@ async function parseError(res) {
   throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
 }
 
-export async function chatWithGemma(message) {
+export async function chatWithGemma(message, { source = 'text', riderId = 'anonymous' } = {}) {
   const res = await fetch(`${API_BASE}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, source, rider_id: riderId }),
   })
 
+  if (!res.ok) await parseError(res)
+  return res.json()
+}
+
+export async function fetchHistory({ limit = 30, category, riderId } = {}) {
+  const params = new URLSearchParams({ limit: String(limit) })
+  if (category) params.set('category', category)
+  if (riderId) params.set('rider_id', riderId)
+
+  const res = await fetch(`${API_BASE}/history?${params}`)
   if (!res.ok) await parseError(res)
   return res.json()
 }

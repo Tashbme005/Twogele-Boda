@@ -4,19 +4,19 @@ import { Icon } from './Icon'
 import '../styles/layout.css'
 
 const NAV = [
-  { to: '/', label: 'Dashboard', icon: 'dashboard', end: true },
-  { to: '/emergency', label: 'Emergency Dispatch', icon: 'emergency' },
-  { to: '/finance', label: 'Financial Insights', icon: 'trending_up' },
-  { to: '/wealth', label: 'Wealth Planner', icon: 'savings' },
-  { to: '/settings', label: 'Settings', icon: 'settings' },
+  { to: '/', label: 'Home', icon: 'dashboard', end: true },
+  { to: '/emergency', label: 'Road danger', icon: 'emergency' },
+  { to: '/finance', label: 'My money', icon: 'trending_up' },
+  { to: '/wealth', label: 'Save & grow', icon: 'savings' },
+  { to: '/settings', label: 'My details', icon: 'settings' },
 ]
 
 const MOBILE = [
   { to: '/', label: 'Home', icon: 'moped', end: true },
-  { to: '/emergency', label: 'Safety', icon: 'security' },
-  { to: '/finance', label: 'Finance', icon: 'trending_up' },
-  { to: '/wealth', label: 'Wealth', icon: 'savings' },
-  { to: '/settings', label: 'Settings', icon: 'settings' },
+  { to: '/emergency', label: 'Danger', icon: 'security' },
+  { to: '/finance', label: 'Money', icon: 'trending_up' },
+  { to: '/wealth', label: 'Save', icon: 'savings' },
+  { to: '/settings', label: 'Me', icon: 'settings' },
 ]
 
 const SIDEBAR_KEY = 'twogele-sidebar-open'
@@ -40,12 +40,12 @@ export default function Layout() {
       <header className="topbar">
         <div className="brand">
           <Icon name="moped" filled />
-          <span>Twogele Boda AI</span>
+          <span>Twogele Boda</span>
         </div>
         <div className="topbar-actions">
           <div className={`status-pill ${emergency ? 'warn' : ''}`}>
             <span className="dot" />
-            {emergency ? 'Emergency Dispatch Active' : 'Gemma 4 Engine Connected'}
+            {emergency ? 'Danger map open' : 'Ready to help'}
           </div>
           <button className="icon-btn" type="button" aria-label="Notifications">
             <Icon name="notifications" />
@@ -63,8 +63,8 @@ export default function Layout() {
       >
         <div className="sidebar-head">
           <div>
-            <h2 className="sidebar-title">Rider Portal</h2>
-            <p className="sidebar-sub">Kampala District</p>
+            <h2 className="sidebar-title">For riders</h2>
+            <p className="sidebar-sub">Kampala</p>
           </div>
           <button
             className="icon-btn sidebar-toggle"

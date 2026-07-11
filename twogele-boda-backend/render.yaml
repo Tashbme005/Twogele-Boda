@@ -1,0 +1,29 @@
+# Render Blueprint — deploy THIS folder as the service root.
+# Dashboard: leave "Root Directory" empty if this folder is the source,
+# or set Root Directory to twogele-boda-backend if the whole monorepo is connected.
+#
+# Manual Web Service settings (same as below):
+#   Language:       Python 3
+#   Build Command:  pip install -r requirements.txt
+#   Start Command:  uvicorn server:app --host 0.0.0.0 --port $PORT
+#   Health check:   /health
+
+services:
+  - type: web
+    name: twogele-boda-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMMA_MODEL
+        value: gemma-4-26b-a4b-it
+      - key: CORS_ORIGINS
+        sync: false
+      - key: DATABASE_URL
+        sync: false

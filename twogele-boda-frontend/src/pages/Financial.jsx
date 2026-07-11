@@ -1,41 +1,101 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Icon } from '../components/Icon'
+import { fetchHistory } from '../lib/api'
 import '../styles/pages.css'
 
-const ACTIVITY = [
-  { label: 'Ride Completion · Kololo', amount: '+ UGX 12,500', pos: true },
-  { label: 'Fuel Refill · Total Oasis', amount: '- UGX 20,000', pos: false },
-  { label: 'Customer Tip · Nakawa', amount: '+ UGX 5,000', pos: true },
-]
+function formatAmount(ledger) {
+  if (!ledger || typeof ledger !== 'object') return null
+  const fuel = Number(ledger['Fuel expenses'] ?? ledger.fuel ?? NaN)
+  const income = Number(ledger['Income saved'] ?? ledger.income ?? NaN)
+  if (!Number.isNaN(fuel) && fuel > 0) return { text: `- UGX ${fuel.toLocaleString()}`, pos: false }
+  if (!Number.isNaN(income) && income > 0) return { text: `+ UGX ${income.toLocaleString()}`, pos: true }
+  return null
+}
+
+function activityLabel(item) {
+  const msg = (item.user_message || '').trim()
+  if (msg.length <= 48) return msg || 'Ledger entry'
+  return `${msg.slice(0, 45)}…`
+}
 
 export default function Financial() {
+  const [history, setHistory] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const rows = await fetchHistory({ limit: 20, category: 'expense' })
+        if (!cancelled) setHistory(rows)
+      } catch (err) {
+        if (!cancelled) setError(err.message || 'Could not load history')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const activity = useMemo(
+    () =>
+      history.map((item) => {
+        const amount = formatAmount(item.ledger)
+        return {
+          id: item.id,
+          label: activityLabel(item),
+          amount: amount?.text || 'Logged',
+          pos: amount?.pos ?? true,
+        }
+      }),
+    [history],
+  )
+
+  const totals = useMemo(() => {
+    let fuel = 0
+    let saved = 0
+    for (const item of history) {
+      const ledger = item.ledger
+      if (!ledger || typeof ledger !== 'object') continue
+      const f = Number(ledger['Fuel expenses'] ?? 0)
+      const s = Number(ledger['Income saved'] ?? 0)
+      if (!Number.isNaN(f)) fuel += f
+      if (!Number.isNaN(s)) saved += s
+    }
+    return { fuel, saved }
+  }, [history])
+
   return (
     <>
       <section className="page-head">
-        <h1>Financial Insights</h1>
-        <p>Real-time performance tracking for your growth.</p>
+        <h1>My money</h1>
+        <p>See what you earned and what you spent.</p>
       </section>
 
       <div className="metrics">
         <article className="metric">
-          <span>Weekly Earnings</span>
-          <strong>UGX 482,500</strong>
-          <em>+12% vs last week</em>
+          <span>Money you kept</span>
+          <strong>UGX {totals.saved.toLocaleString()}</strong>
+          <em>From what you told us</em>
         </article>
         <article className="metric">
-          <span>Fuel Tracking</span>
-          <strong>UGX 140,000</strong>
-          <em>Monthly fuel: UGX 560,000</em>
+          <span>Fuel spent</span>
+          <strong>UGX {totals.fuel.toLocaleString()}</strong>
+          <em>All fuel you recorded</em>
         </article>
         <article className="metric">
-          <span>Peak Time</span>
+          <span>Busy time</span>
           <strong>07:00 – 09:30</strong>
-          <em>Next peak starts in 45 mins</em>
+          <em>Morning rush starts soon</em>
         </article>
       </div>
 
       <section className="section panel">
         <div className="section-head">
-          <h4>Income vs Expenses</h4>
+          <h4>Money in vs money out</h4>
           <span className="empty-note">Last 7 days</span>
         </div>
         <div
@@ -77,22 +137,22 @@ export default function Financial() {
       </section>
 
       <section className="section tip-card" style={{ padding: '1.25rem' }}>
-        <strong>TIPS TO EARN MORE — POWERED BY GEMMA AI</strong>
+        <strong>TIPS TO EARN MORE</strong>
         <div className="two-col" style={{ marginTop: '0.85rem' }}>
           <div className="panel" style={{ boxShadow: 'none' }}>
             <h4 style={{ margin: '0 0 0.35rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
-              <Icon name="campaign" /> High Demand
+              <Icon name="campaign" /> Many customers
             </h4>
             <p className="empty-note" style={{ margin: 0 }}>
-              Kololo has elevated demand from a food festival this evening.
+              Kololo is busy tonight because of a food festival.
             </p>
           </div>
           <div className="panel" style={{ boxShadow: 'none' }}>
             <h4 style={{ margin: '0 0 0.35rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
-              <Icon name="tire_repair" /> Efficiency Alert
+              <Icon name="tire_repair" /> Save fuel
             </h4>
             <p className="empty-note" style={{ margin: 0 }}>
-              Fuel use is up 5%. Check tire pressure before the morning peak.
+              You are using a bit more fuel. Check your tyre air before morning.
             </p>
           </div>
         </div>
@@ -101,14 +161,16 @@ export default function Financial() {
       <div className="two-col section">
         <section className="panel">
           <div className="section-head">
-            <h4>Recent Activity</h4>
-            <button className="linkish" type="button">
-              View All
-            </button>
+            <h4>What you recorded</h4>
+            <span className="empty-note">{loading ? 'Loading…' : `${activity.length} saved`}</span>
           </div>
+          {error && <p className="error-text">{error}</p>}
           <div className="list">
-            {ACTIVITY.map((item) => (
-              <div className="list-item" key={item.label}>
+            {!loading && activity.length === 0 && !error && (
+              <p className="empty-note">Nothing yet. On Home, tell us about fuel or tips.</p>
+            )}
+            {activity.map((item) => (
+              <div className="list-item" key={item.id}>
                 <span>{item.label}</span>
                 <span className={item.pos ? 'pos' : 'neg'}>{item.amount}</span>
               </div>
@@ -117,8 +179,8 @@ export default function Financial() {
         </section>
 
         <section className="panel" style={{ textAlign: 'center' }}>
-          <h4 style={{ marginTop: 0, fontFamily: 'var(--font-headline)' }}>New Bike Goal</h4>
-          <p className="empty-note">Target UGX 5,000,000</p>
+          <h4 style={{ marginTop: 0, fontFamily: 'var(--font-headline)' }}>New bike dream</h4>
+          <p className="empty-note">Goal: UGX 5,000,000</p>
           <div
             style={{
               width: '8rem',
@@ -136,7 +198,7 @@ export default function Financial() {
             75%
           </div>
           <button className="btn-primary" type="button" style={{ width: '100%' }}>
-            Deposit Now
+            Put money in
           </button>
         </section>
       </div>

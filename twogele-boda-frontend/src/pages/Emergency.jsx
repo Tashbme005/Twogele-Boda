@@ -5,22 +5,22 @@ import '../styles/pages.css'
 
 const ALERTS = [
   {
-    title: 'Heavy Flooding',
-    body: 'Nakivubo: Water levels rising. High risk for Bodas.',
+    title: 'Flooding',
+    body: 'Nakivubo: Water is rising. Be careful on a boda.',
     time: '2m ago',
     tone: 'danger',
     icon: 'flood',
   },
   {
-    title: 'Gridlock',
-    body: 'Clock Tower Junction: Heavy congestion. Use Lumumba Ave.',
+    title: 'Heavy jam',
+    body: 'Clock Tower: Big jam. Try Lumumba Ave.',
     time: '12m ago',
     tone: 'warn',
     icon: 'traffic',
   },
   {
-    title: 'Road Closure',
-    body: 'Entebbe Rd: Maintenance near Kibuye. Lane restricted.',
+    title: 'Road closed',
+    body: 'Entebbe Rd near Kibuye: Road work. One lane only.',
     time: '25m ago',
     tone: 'danger',
     icon: 'block',
@@ -28,9 +28,9 @@ const ALERTS = [
 ]
 
 const CONTACTS = [
-  { name: 'Uganda Police', detail: '999 / 112', icon: 'local_police', tel: '999' },
-  { name: 'KCCA Helpline', detail: 'Infrastructure Issues', icon: 'apartment', tel: '0800990000' },
-  { name: 'Ambulance / Red Cross', detail: 'Medical Emergencies', icon: 'medical_services', tel: '911' },
+  { name: 'Police', detail: 'Call 999 or 112', icon: 'local_police', tel: '999' },
+  { name: 'KCCA', detail: 'Bad roads & city problems', icon: 'apartment', tel: '0800990000' },
+  { name: 'Ambulance / Red Cross', detail: 'If someone is hurt', icon: 'medical_services', tel: '911' },
 ]
 
 export default function Emergency() {
@@ -49,7 +49,7 @@ export default function Emergency() {
             className={filter === 'hazards' ? 'chip active' : 'chip'}
             onClick={() => setFilter('hazards')}
           >
-            All Hazards
+            Danger spots
           </button>
           <button
             type="button"
@@ -64,7 +64,7 @@ export default function Emergency() {
 
         <button className="report-fab" type="button">
           <Icon name="add_alert" filled />
-          Report New Incident
+          Report a problem
         </button>
       </section>
 
@@ -72,7 +72,7 @@ export default function Emergency() {
         <div className="dispatch-side-top">
           <div className="section-head">
             <h2>
-              Active Alerts <span className="badge critical">LIVE</span>
+              Warnings now <span className="badge critical">NOW</span>
             </h2>
             <Icon name="tune" />
           </div>
@@ -95,7 +95,7 @@ export default function Emergency() {
         </div>
 
         <div className="dispatch-side-bottom">
-          <span className="panel-label">Emergency Contacts</span>
+          <span className="panel-label">Who to call</span>
           <div className="list">
             {CONTACTS.map((c) => (
               <a className="contact" key={c.name} href={`tel:${c.tel}`}>
@@ -114,10 +114,9 @@ export default function Emergency() {
           </div>
 
           <div className="tip-card" style={{ marginTop: '1rem' }}>
-            <strong>PRO TIP FOR RIDERS</strong>
+            <strong>RIDER TIP</strong>
             <p>
-              Heavy rains are predicted for the afternoon. Keep your phone waterproof and check
-              the hazard map every 30 minutes.
+              Rain may come this afternoon. Cover your phone and check the map often.
             </p>
           </div>
         </div>

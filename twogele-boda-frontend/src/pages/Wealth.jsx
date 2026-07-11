@@ -3,53 +3,53 @@ import '../styles/pages.css'
 
 const INVESTMENTS = [
   {
-    title: 'Boda-Boda SACCO',
-    body: 'Community-driven savings with low-interest loan eligibility.',
-    rate: '8.5% p.a.',
+    title: 'Boda SACCO',
+    body: 'Save with other riders. You can also borrow later.',
+    rate: 'About 8.5% a year',
     icon: 'groups',
-    cta: 'Learn More',
+    cta: 'Learn more',
   },
   {
-    title: 'MTN/Airtel 11% Funds',
-    body: 'High-yield mobile money unit trusts with daily interest.',
-    rate: '11.2% p.a.',
+    title: 'MTN / Airtel save',
+    body: 'Put money on your phone and earn a little every day.',
+    rate: 'About 11% a year',
     icon: 'ad_units',
-    cta: 'Invest Now',
+    cta: 'Start saving',
   },
   {
-    title: 'Treasury Bills',
-    body: 'Government-backed security with fixed competitive rates.',
-    rate: '12.5% p.a.',
+    title: 'Government save',
+    body: 'Safe place to keep money with the government.',
+    rate: 'About 12.5% a year',
     icon: 'account_balance',
-    cta: 'Purchase',
+    cta: 'See how',
   },
 ]
 
 const LEDGER = [
   {
     when: 'Oct 24, 09:15 AM',
-    title: 'Trip Earnings - Entebbe Rd',
-    note: 'AI Parsed: +12,000 cash minus fuel',
+    title: 'Trip money - Entebbe Rd',
+    note: 'Cash after fuel',
     amount: '+8,500',
-    impact: 'Growth',
+    impact: 'Up',
     balance: '12,402,000',
     pos: true,
   },
   {
     when: 'Oct 24, 07:40 AM',
     title: 'Fuel - Total Oasis',
-    note: 'AI Parsed: 18k fuel expense',
+    note: '18k fuel',
     amount: '-18,000',
-    impact: 'Cost',
+    impact: 'Spent',
     balance: '12,393,500',
     pos: false,
   },
   {
     when: 'Oct 23, 08:10 PM',
     title: 'Tips - Nakawa Stage',
-    note: 'AI Parsed: evening tip cluster',
+    note: 'Evening tips',
     amount: '+15,000',
-    impact: 'Growth',
+    impact: 'Up',
     balance: '12,411,500',
     pos: true,
   },
@@ -59,11 +59,8 @@ export default function Wealth() {
   return (
     <>
       <section className="page-head">
-        <h1>Wealth Planner</h1>
-        <p>
-          Manage your savings, track your growth, and secure your family&apos;s future with smart
-          Ugandan investments.
-        </p>
+        <h1>Save &amp; grow</h1>
+        <p>Keep money for your family and your next bike.</p>
       </section>
 
       <div className="wealth-grid">
@@ -71,9 +68,9 @@ export default function Wealth() {
           <div className="goal-top">
             <div>
               <span className="badge verified" style={{ background: 'var(--primary-container)', color: 'var(--on-primary-container)' }}>
-                Active Goal
+                My goal
               </span>
-              <h3>New Bajaj Boxer 150 Goal</h3>
+              <h3>New Bajaj Boxer 150</h3>
             </div>
             <div className="goal-amount">
               <strong>UGX 4,875,000</strong>
@@ -85,23 +82,23 @@ export default function Wealth() {
           </div>
           <div className="goal-meta">
             <div>
-              <span>Weekly Earnings</span>
+              <span>This week&apos;s money</span>
               <strong className="pos">UGX 482,500</strong>
             </div>
             <div>
-              <span>Monthly Savings</span>
+              <span>Saved this month</span>
               <strong>UGX 450,000</strong>
             </div>
             <div>
-              <span>Completion</span>
+              <span>How far</span>
               <strong>65%</strong>
             </div>
             <div>
-              <span>Est. Time Left</span>
-              <strong>4 Months</strong>
+              <span>Time left</span>
+              <strong>About 4 months</strong>
             </div>
             <button className="btn-primary" type="button" style={{ flex: '0 0 auto' }}>
-              Boost Savings
+              Add more save
             </button>
           </div>
         </section>
@@ -109,7 +106,7 @@ export default function Wealth() {
         <div className="wealth-stats">
           <article className="stat-card peach">
             <div>
-              <span>Total Net Worth</span>
+              <span>All your money</span>
               <strong>UGX 12,402,000</strong>
               <em>+12% this month</em>
             </div>
@@ -117,9 +114,9 @@ export default function Wealth() {
           </article>
           <article className="stat-card sand">
             <div>
-              <span>Emergency Fund</span>
+              <span>Emergency money</span>
               <strong>UGX 1,200,000</strong>
-              <em>Ready for withdrawal</em>
+              <em>Ready if you need it</em>
             </div>
             <Icon name="security" />
           </article>
@@ -128,9 +125,9 @@ export default function Wealth() {
 
       <section className="section">
         <div className="section-head">
-          <h2>Investment Opportunities</h2>
+          <h2>Ways to grow money</h2>
           <button className="linkish" type="button">
-            View All →
+            See all →
           </button>
         </div>
         <div className="invest-grid">
@@ -142,7 +139,7 @@ export default function Wealth() {
               <h4>{item.title}</h4>
               <p>{item.body}</p>
               <div className="invest-rate">
-                <span>Projected Return</span>
+                <span>You may earn</span>
                 <strong>{item.rate}</strong>
               </div>
               <button className="btn-outline" type="button">
@@ -156,7 +153,7 @@ export default function Wealth() {
       <section className="section panel" style={{ padding: 0, overflow: 'hidden' }}>
         <div className="ledger-head">
           <h2>
-            <Icon name="analytics" /> Smart Ledger History
+            <Icon name="analytics" /> Money history
           </h2>
           <button className="chip" type="button">
             <Icon name="filter_list" /> Filter
@@ -166,11 +163,11 @@ export default function Wealth() {
           <table className="ledger-table">
             <thead>
               <tr>
-                <th>Date &amp; Time</th>
-                <th>Parsed Log / Source</th>
+                <th>When</th>
+                <th>What</th>
                 <th>Amount</th>
-                <th>Wealth Impact</th>
-                <th>Ledger Balance</th>
+                <th>Up or spent</th>
+                <th>Balance</th>
               </tr>
             </thead>
             <tbody>

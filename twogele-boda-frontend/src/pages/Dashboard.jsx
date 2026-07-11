@@ -12,11 +12,33 @@ import {
 } from '../lib/api'
 import '../styles/pages.css'
 
-const INVESTMENTS = [
-  'Boda-Boda Cooperative SACCOs',
-  'MTN/Airtel 11% Fund',
-  'UG Treasury Bills',
+const SAVE_IDEAS = [
+  'Boda SACCO (save with other riders)',
+  'MTN or Airtel money save',
+  'Government save plans',
 ]
+
+const MONEY_LABELS = {
+  'Fuel expenses': 'Fuel',
+  'Income saved': 'Money saved',
+  'Daily expenses': "Today's spending",
+}
+
+function simpleUrgency(raw) {
+  const text = (raw || '').toLowerCase()
+  if (text.includes('critical') || text.includes('high')) return 'URGENT'
+  if (text.includes('medium') || text.includes('moderate')) return 'CAREFUL'
+  if (text.includes('low')) return 'SMALL'
+  return 'URGENT'
+}
+
+function moneyRows(json) {
+  if (!json || typeof json !== 'object') return []
+  return Object.entries(json).map(([key, value]) => ({
+    label: MONEY_LABELS[key] || key,
+    value: typeof value === 'number' ? `UGX ${Number(value).toLocaleString()}` : String(value),
+  }))
+}
 
 function applyModelResult(data, setResult) {
   const response = data.response || data.raw || ''
@@ -49,14 +71,14 @@ export default function Dashboard() {
 
     setLoading(true)
     setError('')
-    setStatus('Processing text with Gemma 4…')
+    setStatus('Please wait… reading your message')
 
     try {
       const data = await chatWithGemma(text)
       applyModelResult(data, setResult)
-      setStatus('Text dispatch complete')
+      setStatus('Done')
     } catch (err) {
-      setError(err.message || 'Could not reach Gemma backend')
+      setError(err.message || 'Sorry, something went wrong. Try again.')
       setResult(null)
       setStatus('')
     } finally {
@@ -68,7 +90,7 @@ export default function Dashboard() {
     if (loading) return
 
     if (!supported) {
-      setError('Voice input needs Chrome or Edge. Type your message instead.')
+      setError('Voice works best in Chrome or Edge. You can also type.')
       return
     }
 
@@ -77,12 +99,12 @@ export default function Dashboard() {
     if (!recording) {
       try {
         await start()
-        setStatus('Listening… speak now, then tap mic to send')
+        setStatus('Listening… speak, then tap the mic again')
       } catch (err) {
         setError(
           err.name === 'NotAllowedError'
-            ? 'Microphone permission denied. Allow mic access and try again.'
-            : err.message || 'Could not start the microphone',
+            ? 'Please allow the phone mic, then try again.'
+            : err.message || 'Could not open the mic',
         )
         setStatus('')
       }
@@ -90,7 +112,7 @@ export default function Dashboard() {
     }
 
     setLoading(true)
-    setStatus('Transcribing and sending to Gemma 4…')
+    setStatus('Please wait… sending what you said')
 
     try {
       const captured = await stop()
@@ -102,15 +124,15 @@ export default function Dashboard() {
       const combined = [message.trim(), spoken].filter(Boolean).join(' ').trim()
 
       if (!combined) {
-        throw new Error('No speech captured. Tap mic, speak clearly, then tap again.')
+        throw new Error('We did not hear you. Tap mic, speak clearly, then tap again.')
       }
 
       setMessage(combined)
-      const data = await chatWithGemma(combined)
+      const data = await chatWithGemma(combined, { source: 'voice' })
       applyModelResult(data, setResult)
-      setStatus('Voice dispatch complete')
+      setStatus('Done')
     } catch (err) {
-      setError(err.message || 'Voice dispatch failed')
+      setError(err.message || 'Sorry, voice failed. Try typing instead.')
       setResult(null)
       setStatus('')
     } finally {
@@ -123,18 +145,19 @@ export default function Dashboard() {
   const displayText = recording && liveTranscript ? liveTranscript : message
   const micLabel = recording
     ? `Stop & send (${seconds}s)`
-    : 'Record voice note'
+    : 'Speak with mic'
+  const moneyList = moneyRows(result?.json)
 
   return (
     <>
       <section className="page-head">
         <h1>TWOGELE BODA</h1>
-        <p>Kampala Boda hub for Safety &amp; Livelihoods</p>
+        <p>Help for road danger and your daily money</p>
       </section>
 
       <section className="panel composer">
         <label className="panel-label" htmlFor="dispatch-input">
-          Smart Dispatch &amp; Ledger Input
+          Tell us what happened — type or speak
         </label>
         <form onSubmit={handleProcess}>
           <textarea
@@ -142,7 +165,7 @@ export default function Dashboard() {
             value={displayText}
             onChange={(e) => setMessage(e.target.value)}
             disabled={recording}
-            placeholder="Enter or speak text (e.g., 'Mwana I used 22k for fuel today' OR 'Terrible pothole on Jinja Road near traffic lights')"
+            placeholder="Example: 'Mwana I used 22k for fuel today' or 'Bad pothole on Jinja Road near the lights'"
           />
           <div className="composer-actions">
             <button
@@ -151,7 +174,7 @@ export default function Dashboard() {
               disabled={loading || recording || !message.trim()}
             >
               <Icon name="bolt" filled />
-              {loading && !recording ? 'Processing…' : 'Process with Gemma 4'}
+              {loading && !recording ? 'Please wait…' : 'Send'}
             </button>
             <button
               className={`btn-mic${recording ? ' recording' : ''}`}
@@ -167,7 +190,7 @@ export default function Dashboard() {
         </form>
         {recording && (
           <p className="voice-status recording-status">
-            Listening… {seconds}s — tap mic to send transcript to Gemma
+            Listening… {seconds}s — tap the mic again when you finish talking
           </p>
         )}
         {!recording && status && <p className="voice-status">{status}</p>}
@@ -181,10 +204,10 @@ export default function Dashboard() {
               <div className="track-head">
                 <h3>
                   <Icon name="warning" />
-                  TRACK 1: Safety &amp; Incident Dispatch
+                  1. Road danger
                 </h3>
                 <span className="badge critical">
-                  {(result?.urgency || 'CRITICAL').toUpperCase().split(/[\s(,]/)[0]}
+                  {result?.kind === 'safety' ? simpleUrgency(result.urgency) : 'READY'}
                 </span>
               </div>
 
@@ -192,26 +215,26 @@ export default function Dashboard() {
                 <>
                   <div className="meta-grid">
                     <div className="meta-box">
-                      <span>Hazard Type</span>
-                      <strong>{result.hazard || 'Reported hazard'}</strong>
+                      <span>What is wrong</span>
+                      <strong>{result.hazard || 'Road problem'}</strong>
                     </div>
                     <div className="meta-box">
-                      <span>Location</span>
+                      <span>Where</span>
                       <strong>{result.location || 'Kampala'}</strong>
                     </div>
                   </div>
                   <div className="authority">
                     <Icon name="policy" />
                     <div>
-                      <strong>Assigned Authority</strong>
+                      <strong>Who can help</strong>
                       <p>{result.authority || result.response}</p>
                     </div>
                   </div>
                 </>
               ) : (
                 <p className="empty-note">
-                  Safety reports appear here after Gemma classifies a hazard, accident, or road
-                  block.
+                  Tell us about a bad road, accident, or road block. Help and who to call will show
+                  here.
                 </p>
               )}
             </div>
@@ -224,39 +247,50 @@ export default function Dashboard() {
               <div className="track-head">
                 <h3>
                   <Icon name="account_balance_wallet" />
-                  TRACK 2: Wealth Planner
+                  2. Your money
                 </h3>
-                <span className="badge verified">VERIFIED</span>
+                <span className="badge verified">
+                  {result?.kind === 'expense' ? 'SAVED' : 'READY'}
+                </span>
               </div>
 
               {result?.kind === 'expense' ? (
                 <>
                   <p className="panel-label" style={{ marginBottom: '0.5rem' }}>
-                    Real-time Ledger Entry
+                    Today&apos;s money record
                   </p>
                   <div className="ledger">
-                    <pre>
-                      {typeof result.json === 'object'
-                        ? JSON.stringify(result.json, null, 2)
-                        : result.json || result.response}
-                    </pre>
+                    {moneyList.length > 0 ? (
+                      <div className="list">
+                        {moneyList.map((row) => (
+                          <div className="list-item" key={row.label}>
+                            <span>{row.label}</span>
+                            <span>{row.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="empty-note" style={{ margin: 0 }}>
+                        {result.response}
+                      </p>
+                    )}
                   </div>
                   <div className="projection">
                     <div className="projection-icon">
                       <Icon name="show_chart" />
                     </div>
                     <div>
-                      <span>Monthly Savings Projection</span>
+                      <span>If you save like this for 30 days</span>
                       <strong>
                         {typeof result.json === 'object' && result.json['Income saved']
-                          ? `${Number(result.json['Income saved']) * 30} UGX`
-                          : '450,000 UGX'}
+                          ? `UGX ${(Number(result.json['Income saved']) * 30).toLocaleString()}`
+                          : 'UGX 450,000'}
                       </strong>
                     </div>
                   </div>
-                  <p className="panel-label">Suggested Investment Options</p>
+                  <p className="panel-label">Ways to grow your money</p>
                   <div className="chips">
-                    {INVESTMENTS.map((item) => (
+                    {SAVE_IDEAS.map((item) => (
                       <span className="chip" key={item}>
                         {item}
                       </span>
@@ -265,7 +299,8 @@ export default function Dashboard() {
                 </>
               ) : (
                 <p className="empty-note">
-                  Fuel, tips, and savings logs appear here as structured ledger JSON from Gemma.
+                  Tell us about fuel, tips, or money you kept. Your simple money numbers will show
+                  here.
                 </p>
               )}
             </div>
@@ -277,10 +312,10 @@ export default function Dashboard() {
         <div className="section-head">
           <h4>
             <Icon name="explore" />
-            Active Hotspots
+            Busy places &amp; danger spots
           </h4>
           <Link className="linkish" to="/emergency">
-            View Full Map
+            Open big map
           </Link>
         </div>
         <MapView
@@ -289,8 +324,8 @@ export default function Dashboard() {
           className="dashboard-map"
         />
         <div className="hotspot-legend-row">
-          <div>🟢 High Demand: Katwe</div>
-          <div>🔴 Hazard: Clock Tower</div>
+          <div>🟢 Many customers: Katwe</div>
+          <div>🔴 Danger: Clock Tower</div>
         </div>
       </section>
 
@@ -298,14 +333,14 @@ export default function Dashboard() {
         <img src={kampalaHero} alt="Kampala boda rider on the road" />
         <div className="overlay" />
         <div className="copy">
-          <h3>Empowering Kampala&apos;s Boda community</h3>
-          <p>Built with Gemma for the modern Ugandan boda guy.</p>
+          <h3>Made for Kampala boda riders</h3>
+          <p>Simple help for the road and your pocket.</p>
         </div>
       </section>
 
       <p className="disclaimer">
-        Assistive prototype only. Not an official emergency dispatch, legal, or authoritative
-        financial advisory system. Developed for Build with Gemma Uganda.
+        This app helps you, but it is not the police, hospital, or a bank. For Build with Gemma
+        Uganda.
       </p>
       <div className="partners">
         <span>KCCA</span>
