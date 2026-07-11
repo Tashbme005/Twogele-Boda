@@ -441,10 +441,20 @@
   display: flex;
   gap: 0.75rem;
   padding: 0.9rem;
+  width: 100%;
   background: var(--surface-lowest);
   border-radius: var(--radius-xl);
+  border: 0;
   border-left: 4px solid var(--error);
   box-shadow: 0 2px 10px var(--shadow);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.alert-row.selected {
+  outline: 2px solid color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
 .alert-row.warn {

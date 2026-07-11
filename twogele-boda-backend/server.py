@@ -14,7 +14,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from agent.model_engine import ModelEngine
-from agent.twogele_prompt import LIVELIHOODS_HINT, SAFER_RIDES_HINT
+from agent.twogele_prompt import LIVELIHOODS_HINT, SAFER_RIDES_HINT, language_hint
 from db import get_session, init_db
 from db.repository import dispatch_to_dict, list_dispatches, save_dispatch
 
@@ -83,6 +83,10 @@ class ChatRequest(BaseModel):
     )
     rider_id: str | None = Field(default="anonymous", description="Optional rider id")
     source: str | None = Field(default="text", description="text | voice")
+    language: str | None = Field(
+        default="en",
+        description="Rider UI language: en | lg | sw",
+    )
 
 
 class ChatResponse(BaseModel):
@@ -116,6 +120,11 @@ def _hint_for_track(track: str | None) -> str | None:
     if normalized in {"livelihoods", "ledger", "bookkeeping", "finance"}:
         return LIVELIHOODS_HINT
     return None
+
+
+def _combined_hint(track: str | None, language: str | None) -> str | None:
+    parts = [p for p in (_hint_for_track(track), language_hint(language)) if p]
+    return "\n".join(parts) if parts else None
 
 
 def _persist(user_message: str, result: dict[str, Any], source: str, rider_id: str) -> dict[str, Any]:
@@ -303,7 +312,7 @@ def chat(payload: ChatRequest) -> ChatResponse:
     try:
         result = engine.generate(
             payload.message,
-            hint=_hint_for_track(payload.track),
+            hint=_combined_hint(payload.track, payload.language),
         )
         meta = _persist(
             payload.message,
@@ -323,6 +332,7 @@ async def chat_multimodal(
     message: Annotated[str, Form()] = "",
     track: Annotated[str | None, Form()] = None,
     rider_id: Annotated[str, Form()] = "anonymous",
+    language: Annotated[str, Form()] = "en",
     audio: UploadFile | None = File(default=None),
 ) -> ChatResponse:
     if engine is None:
@@ -351,7 +361,7 @@ async def chat_multimodal(
     try:
         result = engine.generate(
             text,
-            hint=_hint_for_track(track),
+            hint=_combined_hint(track, language),
         )
         meta = _persist(text, result, source="voice", rider_id=rider_id or "anonymous")
         result = {**result, **meta}

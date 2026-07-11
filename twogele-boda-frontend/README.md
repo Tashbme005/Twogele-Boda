@@ -1,26 +1,28 @@
 # Twogele Boda Frontend
 
-React + Vite Rider Portal UI inspired by the Stitch **Warm Urban Transit** designs.
+React + Vite rider portal (Stitch **Warm Urban Transit**).
 
 ## Screens
 
-- **Dashboard** — Smart Dispatch & Ledger input wired to Gemma `/chat`
-- **Emergency Dispatch** — hazard map + live alerts + contacts
+- **Landing / Login / Sign up** — public marketing + Neon Auth
+- **Dashboard** — Smart Dispatch & Ledger via Gemma `/chat`
+- **Emergency Dispatch** — hazard map + alerts + contacts
 - **Financial Insights** — earnings, fuel, activity
 - **Wealth Planner** — SACCO / investment suggestions
-- **Settings** — rider preferences
+- **Settings** — language, status, logout
 
-## Run
+## Run locally
 
 ```bash
 cd twogele-boda-frontend
+cp .env.example .env   # fill VITE_API_URL + VITE_NEON_AUTH_URL
 npm install
 npm run dev
 ```
 
 Open http://localhost:5173
 
-Start the backend first:
+Backend (Render or local):
 
 ```bash
 cd ../twogele-boda-backend
@@ -28,8 +30,24 @@ source .venv/bin/activate
 python server.py
 ```
 
-Optional `.env.local`:
+## Environment
 
-```env
-VITE_API_URL=http://localhost:8000
-```
+| Variable | Purpose |
+|----------|---------|
+| `VITE_API_URL` | FastAPI base URL (Render in prod) |
+| `VITE_NEON_AUTH_URL` | Neon Auth Base URL |
+
+Vite inlines `VITE_*` at **build** time — change them in Vercel and redeploy.
+
+## Deploy on Vercel
+
+See **[VERCEL.md](./VERCEL.md)** for the full checklist (root directory, env vars, CORS, Neon Auth).
+
+Quick settings:
+
+| Setting | Value |
+|---------|--------|
+| Root Directory | `twogele-boda-frontend` |
+| Build | `npm run build` |
+| Output | `dist` |
+| Framework | Vite |
