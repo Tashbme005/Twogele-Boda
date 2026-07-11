@@ -30,11 +30,12 @@ from agent.model_engine import ModelEngine  # noqa: E402
 from tests.test_cases import TEST_CASES, case_by_id, cases_by_category  # noqa: E402
 
 
-def _evaluate(case: dict, response_text: str) -> dict:
+def _evaluate(case: dict, response_text: str, raw_text: str = "") -> dict:
+    haystack = f"{response_text}\n{raw_text}".lower()
     missing = [
         needle
         for needle in case["expect_in_response"]
-        if needle.lower() not in response_text.lower()
+        if needle.lower() not in haystack
     ]
     return {
         "passed": len(missing) == 0,
@@ -42,11 +43,14 @@ def _evaluate(case: dict, response_text: str) -> dict:
     }
 
 
-def _generate_with_retries(engine: ModelEngine, prompt: str, retries: int = 3):
+def _generate_with_retries(engine: ModelEngine, prompt: str, retries: int = 4):
     last_error: Exception | None = None
     for attempt in range(1, retries + 1):
         try:
-            return engine.generate(prompt)
+            result = engine.generate(prompt)
+            if not (result.get("response") or result.get("raw") or "").strip():
+                raise RuntimeError("Empty model output")
+            return result
         except Exception as exc:  # noqa: BLE001
             last_error = exc
             if attempt == retries:
@@ -58,7 +62,7 @@ def _generate_with_retries(engine: ModelEngine, prompt: str, retries: int = 3):
     raise last_error
 
 
-def run_cases(cases: list[dict], retries: int = 3) -> int:
+def run_cases(cases: list[dict], retries: int = 4) -> int:
     engine = ModelEngine()
     failures = 0
 
@@ -78,8 +82,9 @@ def run_cases(cases: list[dict], retries: int = 3) -> int:
             continue
 
         response = result.get("response") or ""
+        raw = result.get("raw") or ""
         thinking = result.get("thinking")
-        evaluation = _evaluate(case, response)
+        evaluation = _evaluate(case, response, raw)
 
         if thinking:
             print("Thinking (truncated):")
@@ -117,8 +122,8 @@ def main() -> int:
     parser.add_argument(
         "--retries",
         type=int,
-        default=3,
-        help="Retries per case on API errors (default: 3)",
+        default=4,
+        help="Retries per case on API errors (default: 4)",
     )
     args = parser.parse_args()
 

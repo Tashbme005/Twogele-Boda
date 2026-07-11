@@ -37,7 +37,7 @@ class ModelEngine:
         self._config = self._build_config()
 
     def _build_config(self) -> types.GenerateContentConfig:
-        """Match the Google AI Studio export settings."""
+        """Google AI Studio settings, tuned for safety-incident reporting."""
         return types.GenerateContentConfig(
             temperature=0.6,
             top_p=0.85,
@@ -57,9 +57,10 @@ class ModelEngine:
                     category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
                     threshold="BLOCK_LOW_AND_ABOVE",
                 ),
+                # Must stay permissive: riders report accidents, floods, and hazards.
                 types.SafetySetting(
                     category="HARM_CATEGORY_DANGEROUS_CONTENT",
-                    threshold="BLOCK_LOW_AND_ABOVE",
+                    threshold="BLOCK_ONLY_HIGH",
                 ),
             ],
             tools=[
@@ -105,19 +106,25 @@ class ModelEngine:
                 chunks.append(chunk.text)
 
         raw = "".join(chunks).strip()
+        if not raw:
+            raise RuntimeError(
+                "Model returned an empty response (possible safety block or API glitch)."
+            )
+
         thinking, visible = _split_thinking(raw)
+        # Prefer visible output; fall back to raw if thinking tags swallowed everything.
+        response = visible.strip() or raw
 
         return {
             "model": self.model,
             "thinking": thinking,
-            "response": visible,
+            "response": response,
             "raw": raw,
         }
 
 
 def _split_thinking(text: str) -> tuple[str | None, str]:
     """Extract thinking blocks when present; return (thinking, visible)."""
-    # AI Studio prompt uses <|think|> ... </|think|>
     pairs = (
         ("<|think|>", "</|think|>"),
         ("<|think|>", "<|/think|>"),
@@ -131,7 +138,8 @@ def _split_thinking(text: str) -> tuple[str | None, str]:
         if end_tag in rest:
             thinking, after = rest.split(end_tag, 1)
             visible = f"{before}{after}".strip()
-            return thinking.strip(), visible
-        return rest.strip(), before.strip()
+            return thinking.strip(), visible or text
+        # Unclosed think block: keep full text visible so SAFETY fields are not lost.
+        return rest.strip(), text
 
     return None, text
