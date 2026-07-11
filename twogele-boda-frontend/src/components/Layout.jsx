@@ -13,8 +13,9 @@ const NAV = [
 const MOBILE = [
   { to: '/', label: 'Home', icon: 'moped', end: true },
   { to: '/emergency', label: 'Safety', icon: 'security' },
-  { to: '/finance', label: 'Ledger', icon: 'payments' },
-  { to: '/settings', label: 'Profile', icon: 'person' },
+  { to: '/finance', label: 'Finance', icon: 'trending_up' },
+  { to: '/wealth', label: 'Wealth', icon: 'savings' },
+  { to: '/settings', label: 'Settings', icon: 'settings' },
 ]
 
 export default function Layout() {
@@ -58,9 +59,14 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
-        <div className="tip-card">
-          <strong>RIDER SAFETY TIP</strong>
-          <p>Wear high-visibility gear during evening rain in Kampala.</p>
+        <div className="rider-card">
+          <div className="rider-avatar" aria-hidden="true">
+            MK
+          </div>
+          <div>
+            <strong>Musa K.</strong>
+            <p>Rider ID: #29481</p>
+          </div>
         </div>
       </aside>
 

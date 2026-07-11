@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import kampalaHero from '../assets/stitch/kampala-boda.png'
 import { Icon } from '../components/Icon'
+import MapView, { DEMAND_MARKERS, HAZARD_MARKERS } from '../components/MapView'
 import {
   chatWithGemma,
   classifyResponse,
@@ -190,15 +192,18 @@ export default function Dashboard() {
             <Icon name="explore" />
             Active Hotspots
           </h4>
-          <button className="linkish" type="button">
+          <Link className="linkish" to="/emergency">
             View Full Map
-          </button>
+          </Link>
         </div>
-        <div className="hotspots">
-          <div className="hotspot-legend">
-            <div>🟢 High Demand: Katwe</div>
-            <div>🔴 Hazard: Clock Tower</div>
-          </div>
+        <MapView
+          markers={[...HAZARD_MARKERS, ...DEMAND_MARKERS]}
+          zoom={12}
+          className="dashboard-map"
+        />
+        <div className="hotspot-legend-row">
+          <div>🟢 High Demand: Katwe</div>
+          <div>🔴 Hazard: Clock Tower</div>
         </div>
       </section>
 
