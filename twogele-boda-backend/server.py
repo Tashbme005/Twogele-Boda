@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from agent.model_engine import ModelEngine
 from agent.twogele_prompt import LIVELIHOODS_HINT, SAFER_RIDES_HINT
 
-load_dotenv()
+load_dotenv(override=True)
 
 engine: ModelEngine | None = None
 
