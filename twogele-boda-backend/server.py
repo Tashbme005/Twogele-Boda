@@ -52,8 +52,21 @@ app = FastAPI(
 
 _raw_origins = os.getenv(
     "CORS_ORIGINS",
-    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://localhost:8081",
+    (
+        "http://localhost:5173,"
+        "http://127.0.0.1:5173,"
+        "http://localhost:3000,"
+        "http://localhost:8081,"
+        "https://twogele-boda.vercel.app"
+    ),
 ).strip()
+
+# Always allow the production Vercel app even if Render env is outdated
+_ALWAYS_ALLOW = {
+    "https://twogele-boda.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+}
 
 if _raw_origins == "*":
     # Starlette forbids allow_origins=["*"] with allow_credentials=True
@@ -65,10 +78,15 @@ if _raw_origins == "*":
         allow_headers=["*"],
     )
 else:
-    _origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+    _origins = [o.strip().rstrip("/") for o in _raw_origins.split(",") if o.strip()]
+    for origin in _ALWAYS_ALLOW:
+        if origin not in _origins:
+            _origins.append(origin)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=_origins or ["*"],
+        allow_origins=_origins,
+        # Preview deploys: https://twogele-boda-*.vercel.app
+        allow_origin_regex=r"https://.*\.vercel\.app",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
