@@ -317,15 +317,11 @@
 }
 
 .prompt-chips {
-  margin: 0 0 1rem;
-  padding: 0.85rem;
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--primary-container) 22%, var(--surface-low));
-  border: 1px dashed color-mix(in srgb, var(--primary) 35%, transparent);
+  margin-top: 0.85rem;
 }
 
 .prompt-chips .panel-label {
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.45rem;
 }
 
 button.chip.prompt-chip {
@@ -334,15 +330,13 @@ button.chip.prompt-chip {
   color: inherit;
   text-align: left;
   max-width: 100%;
-  background: var(--surface-lowest);
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 button.chip.prompt-chip:hover:not(:disabled) {
   background: var(--primary-container);
   border-color: color-mix(in srgb, var(--primary) 35%, transparent);
   color: var(--on-primary-container);
-  transform: translateY(-1px);
 }
 
 button.chip.prompt-chip:disabled {

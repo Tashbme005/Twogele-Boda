@@ -269,25 +269,6 @@ export default function Dashboard() {
         <label className="panel-label" htmlFor="dispatch-input">
           {t('tellWhatHappened')}
         </label>
-
-        <div className="prompt-chips">
-          <p className="panel-label">{t('tryThese')}</p>
-          <div className="chips">
-            {prompts.map((item) => (
-              <button
-                key={item.id}
-                className="chip prompt-chip"
-                type="button"
-                title={item.text}
-                disabled={loading || recording}
-                onClick={() => runPrompt(item.text)}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <form onSubmit={handleProcess}>
           <textarea
             id="dispatch-input"
@@ -317,6 +298,24 @@ export default function Dashboard() {
             </button>
           </div>
         </form>
+
+        <div className="prompt-chips">
+          <p className="panel-label">{t('tryThese')}</p>
+          <div className="chips">
+            {prompts.map((item) => (
+              <button
+                key={item.id}
+                className="chip prompt-chip"
+                type="button"
+                title={item.text}
+                disabled={loading || recording}
+                onClick={() => runPrompt(item.text)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {recording && (
           <p className="voice-status recording-status">{t('listening', { seconds })}</p>

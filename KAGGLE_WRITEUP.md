@@ -12,6 +12,10 @@ Kampala’s boda boda riders keep the city moving, yet they face severe daily vo
 
 **Twogele Boda** removes that friction with a **single conversational endpoint**. Whether a rider speaks a frantic report about a collision or logs evening fuel costs in raw street slang—mixed English, Luganda, Kiswahili, and code-switching shortcuts like `22k`—one AI assistant handles the full pipeline: understand → reason → structure → act.
 
+## Solution overview
+
+Twogele Boda is a live web app for Kampala boda riders: one chat box (type or speak) powered by Gemma 4 that automatically routes each message into either **road-safety triage** or **daily money bookkeeping**. On the safety path, it turns messy slang or Luganda reports into clear hazard type, location, urgency, and the right authority (KCCA or Traffic Police / emergency response). On the livelihood path, it turns fuel, tips, and savings talk into clean ledger numbers, a simple savings projection, and local ideas such as SACCOs or mobile money. The rider portal (React on Vercel) talks to a FastAPI + Gemma backend (Render), with Neon Auth login and Neon Postgres history, plus English, Luganda, and Kiswahili UI—so riders never leave one screen to stay safer and track their livelihood.
+
 ---
 
 ## 2. Gemma 4 Technical Architecture & Integration
