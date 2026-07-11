@@ -10,7 +10,7 @@ This repository houses the full stack: a **FastAPI** backend driven by Gemma 4, 
 
 Built for **[Build with Gemma](https://ai.google.dev/gemma)** — *Hack for Bodas: AI for Smart City Mobility* (11th July).
 
-![Hack for Bodas — Build with Gemma banner](./hackathonbanner.png)
+![Hack for Bodas — Build with Gemma banner](./assests/hackathonbanner.png)
 
 **Twogele Boda** applies Gemma 4 to a real Kampala mobility problem: busy boda riders should not juggle separate apps for safety dispatch and livelihood tracking. One chat handles both — in English, Luganda, or street slang, via text or audio.
 
