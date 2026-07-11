@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import kampalaHero from '../assets/stitch/kampala-boda.png'
 import { Icon } from '../components/Icon'
@@ -10,6 +10,7 @@ import {
   classifyResponse,
   extractField,
   extractJsonBlock,
+  fetchHistory,
   replyPreview,
 } from '../lib/api'
 import { useAuth } from '../lib/AuthContext'
@@ -135,19 +136,44 @@ function moneyRows(json, t) {
   }))
 }
 
-function applyModelResult(data, setResult) {
-  const response = (data.response || data.raw || '').trim()
+function parseResult(data, userMessage) {
+  const response = (data.response || data.raw || data.model_response || '').trim()
   const kind = classifyResponse(response, data.category)
-  setResult({
+  return {
     kind,
+    userMessage: userMessage || data.user_message || '',
     response,
     thinking: data.thinking,
-    json: extractJsonBlock(response),
+    json: data.ledger || extractJsonBlock(response),
     hazard: extractField(response, 'Hazard Type'),
     location: extractField(response, 'Location'),
     urgency: extractField(response, 'Urgency'),
     authority: extractField(response, 'Responsible Body'),
-  })
+  }
+}
+
+function historyToMessages(rows) {
+  const chronological = [...rows].reverse()
+  const messages = []
+  for (const row of chronological) {
+    if (row.user_message) {
+      messages.push({
+        id: `u-${row.id}`,
+        role: 'user',
+        text: row.user_message,
+        category: row.category,
+      })
+    }
+    if (row.model_response) {
+      messages.push({
+        id: `a-${row.id}`,
+        role: 'assistant',
+        text: replyPreview(row.model_response) || row.model_response,
+        category: row.category,
+      })
+    }
+  }
+  return messages
 }
 
 export default function Dashboard() {
@@ -157,7 +183,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
-  const [result, setResult] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [safetyResult, setSafetyResult] = useState(null)
+  const [moneyResult, setMoneyResult] = useState(null)
+  const chatEndRef = useRef(null)
   const { recording, supported, seconds, liveTranscript, start, stop } =
     useVoiceRecorder(speechLang)
 
@@ -174,6 +203,51 @@ export default function Dashboard() {
             'Government save plans',
           ]
 
+  useEffect(() => {
+    let cancelled = false
+    async function loadHistory() {
+      if (!riderId || riderId === 'anonymous') {
+        setMessages([])
+        return
+      }
+      try {
+        const rows = await fetchHistory({ limit: 30, riderId })
+        if (cancelled) return
+        setMessages(historyToMessages(rows))
+        const latestSafety = rows.find((row) => row.category === 'safety')
+        const latestMoney = rows.find((row) => row.category === 'expense')
+        if (latestSafety) setSafetyResult(parseResult(latestSafety, latestSafety.user_message))
+        if (latestMoney) setMoneyResult(parseResult(latestMoney, latestMoney.user_message))
+      } catch {
+        // History is optional — chat still works without it.
+      }
+    }
+    loadHistory()
+    return () => {
+      cancelled = true
+    }
+  }, [riderId])
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [messages, loading])
+
+  function applyParsed(parsed, userText) {
+    const stamp = Date.now()
+    setMessages((prev) => [
+      ...prev,
+      { id: `u-${stamp}`, role: 'user', text: userText, category: parsed.kind },
+      {
+        id: `a-${stamp}`,
+        role: 'assistant',
+        text: replyPreview(parsed.response) || parsed.response,
+        category: parsed.kind,
+      },
+    ])
+    if (parsed.kind === 'safety' || parsed.kind === 'unknown') setSafetyResult(parsed)
+    if (parsed.kind === 'expense' || parsed.kind === 'unknown') setMoneyResult(parsed)
+  }
+
   async function runPrompt(text) {
     const trimmed = text.trim()
     if (!trimmed || loading || recording) return
@@ -185,11 +259,11 @@ export default function Dashboard() {
 
     try {
       const data = await chatWithGemma(trimmed, { riderId, language })
-      applyModelResult(data, setResult)
+      applyParsed(parseResult(data, trimmed), trimmed)
       setStatus(t('done'))
+      setMessage('')
     } catch (err) {
       setError(err.message || t('sorryWrong'))
-      setResult(null)
       setStatus('')
     } finally {
       setLoading(false)
@@ -242,23 +316,20 @@ export default function Dashboard() {
 
       setMessage(combined)
       const data = await chatWithGemma(combined, { source: 'voice', riderId, language })
-      applyModelResult(data, setResult)
+      applyParsed(parseResult(data, combined), combined)
       setStatus(t('done'))
+      setMessage('')
     } catch (err) {
       setError(err.message || t('voiceFailed'))
-      setResult(null)
       setStatus('')
     } finally {
       setLoading(false)
     }
   }
 
-  const showSafety = !result || result.kind === 'safety' || result.kind === 'unknown'
-  const showWealth = !result || result.kind === 'expense' || result.kind === 'unknown'
   const displayText = recording && liveTranscript ? liveTranscript : message
   const micLabel = recording ? t('stopSend', { seconds }) : t('speakWithMic')
-  const moneyList = moneyRows(result?.json, t)
-  const replyText = result ? replyPreview(result.response) || result.response : ''
+  const moneyList = moneyRows(moneyResult?.json, t)
 
   return (
     <>
@@ -326,116 +397,129 @@ export default function Dashboard() {
         {error && <p className="error-text">{error}</p>}
       </section>
 
-      {result && replyText && (
-        <section className="panel reply-panel" aria-live="polite">
-          <p className="panel-label">{t('gemmaReply')}</p>
-          <p className="reply-body">{replyText}</p>
-        </section>
-      )}
+      <section className="panel chat-panel" aria-live="polite">
+        <div className="section-head" style={{ marginBottom: '0.75rem' }}>
+          <h4>
+            <Icon name="forum" />
+            {t('chatHistory')}
+          </h4>
+        </div>
+        <div className="chat-thread">
+          {messages.length === 0 && !loading ? (
+            <p className="empty-note">{t('noChatsYet')}</p>
+          ) : (
+            messages.map((item) => (
+              <div
+                key={item.id}
+                className={`chat-bubble ${item.role}${item.category ? ` cat-${item.category}` : ''}`}
+              >
+                <span className="chat-role">{item.role === 'user' ? t('you') : t('twogele')}</span>
+                <p>{item.text}</p>
+              </div>
+            ))
+          )}
+          {loading && <p className="voice-status">{t('pleaseWaitReading')}</p>}
+          <div ref={chatEndRef} />
+        </div>
+      </section>
 
       <div className="tracks">
-        {showSafety && (
-          <article className="track safety">
-            <div className="track-inner">
-              <div className="track-head">
-                <h3>
-                  <Icon name="warning" />
-                  {t('roadDanger')}
-                </h3>
-                <span className="badge critical">
-                  {result?.kind === 'safety' ? simpleUrgency(result.urgency, t) : t('ready')}
-                </span>
-              </div>
-
-              {result?.kind === 'safety' ? (
-                <>
-                  <div className="meta-grid">
-                    <div className="meta-box">
-                      <span>{t('whatWrong')}</span>
-                      <strong>{result.hazard || t('roadProblem')}</strong>
-                    </div>
-                    <div className="meta-box">
-                      <span>{t('where')}</span>
-                      <strong>{result.location || t('kampala')}</strong>
-                    </div>
-                  </div>
-                  <div className="authority">
-                    <Icon name="policy" />
-                    <div>
-                      <strong>{t('whoHelp')}</strong>
-                      <p>{result.authority || result.response}</p>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <p className="empty-note">{t('safetyEmpty')}</p>
-              )}
+        <article className="track safety">
+          <div className="track-inner">
+            <div className="track-head">
+              <h3>
+                <Icon name="warning" />
+                {t('roadDanger')}
+              </h3>
+              <span className="badge critical">
+                {safetyResult ? simpleUrgency(safetyResult.urgency, t) : t('ready')}
+              </span>
             </div>
-          </article>
-        )}
 
-        {showWealth && (
-          <article className="track wealth">
-            <div className="track-inner">
-              <div className="track-head">
-                <h3>
-                  <Icon name="account_balance_wallet" />
-                  {t('yourMoney')}
-                </h3>
-                <span className="badge verified">
-                  {result?.kind === 'expense' ? t('saved') : t('ready')}
-                </span>
-              </div>
+            {safetyResult ? (
+              <>
+                <div className="meta-grid">
+                  <div className="meta-box">
+                    <span>{t('whatWrong')}</span>
+                    <strong>{safetyResult.hazard || t('roadProblem')}</strong>
+                  </div>
+                  <div className="meta-box">
+                    <span>{t('where')}</span>
+                    <strong>{safetyResult.location || t('kampala')}</strong>
+                  </div>
+                </div>
+                <div className="authority">
+                  <Icon name="policy" />
+                  <div>
+                    <strong>{t('whoHelp')}</strong>
+                    <p>{safetyResult.authority || replyPreview(safetyResult.response)}</p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="empty-note">{t('safetyEmpty')}</p>
+            )}
+          </div>
+        </article>
 
-              {result?.kind === 'expense' ? (
-                <>
-                  <p className="panel-label" style={{ marginBottom: '0.5rem' }}>
-                    {t('todayMoney')}
-                  </p>
-                  <div className="ledger">
-                    {moneyList.length > 0 ? (
-                      <div className="list">
-                        {moneyList.map((row) => (
-                          <div className="list-item" key={row.label}>
-                            <span>{row.label}</span>
-                            <span>{row.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="empty-note" style={{ margin: 0 }}>
-                        {result.response}
-                      </p>
-                    )}
-                  </div>
-                  <div className="projection">
-                    <div className="projection-icon">
-                      <Icon name="show_chart" />
-                    </div>
-                    <div>
-                      <span>{t('ifSave30')}</span>
-                      <strong>
-                        {typeof result.json === 'object' && result.json['Income saved']
-                          ? `UGX ${(Number(result.json['Income saved']) * 30).toLocaleString()}`
-                          : 'UGX 450,000'}
-                      </strong>
-                    </div>
-                  </div>
-                  <p className="panel-label">{t('waysGrow')}</p>
-                  <div className="chips">
-                    {saveIdeas.map((item) => (
-                      <span className="chip" key={item}>
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="empty-note">{t('moneyEmpty')}</p>
-              )}
+        <article className="track wealth">
+          <div className="track-inner">
+            <div className="track-head">
+              <h3>
+                <Icon name="account_balance_wallet" />
+                {t('yourMoney')}
+              </h3>
+              <span className="badge verified">{moneyResult ? t('saved') : t('ready')}</span>
             </div>
-          </article>
-        )}
+
+            {moneyResult ? (
+              <>
+                <p className="panel-label" style={{ marginBottom: '0.5rem' }}>
+                  {t('todayMoney')}
+                </p>
+                <div className="ledger">
+                  {moneyList.length > 0 ? (
+                    <div className="list">
+                      {moneyList.map((row) => (
+                        <div className="list-item" key={row.label}>
+                          <span>{row.label}</span>
+                          <span>{row.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="empty-note" style={{ margin: 0 }}>
+                      {replyPreview(moneyResult.response) || moneyResult.response}
+                    </p>
+                  )}
+                </div>
+                <div className="projection">
+                  <div className="projection-icon">
+                    <Icon name="show_chart" />
+                  </div>
+                  <div>
+                    <span>{t('ifSave30')}</span>
+                    <strong>
+                      {typeof moneyResult.json === 'object' && moneyResult.json['Income saved']
+                        ? `UGX ${(Number(moneyResult.json['Income saved']) * 30).toLocaleString()}`
+                        : 'UGX 450,000'}
+                    </strong>
+                  </div>
+                </div>
+                <p className="panel-label">{t('waysGrow')}</p>
+                <div className="chips">
+                  {saveIdeas.map((item) => (
+                    <span className="chip" key={item}>
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="empty-note">{t('moneyEmpty')}</p>
+            )}
+          </div>
+        </article>
       </div>
 
       <section className="section panel">

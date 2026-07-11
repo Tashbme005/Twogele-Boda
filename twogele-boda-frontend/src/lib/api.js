@@ -8,16 +8,38 @@ async function parseError(res) {
 
 export async function chatWithGemma(
   message,
-  { source = 'text', riderId = 'anonymous', language = 'en' } = {},
+  { source = 'text', riderId = 'anonymous', language = 'en', retries = 2 } = {},
 ) {
-  const res = await fetch(`${API_BASE}/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, source, rider_id: riderId, language }),
-  })
+  let lastError
+  const attempts = Math.max(1, retries + 1)
 
-  if (!res.ok) await parseError(res)
-  return res.json()
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, source, rider_id: riderId, language }),
+      })
+
+      if (!res.ok) {
+        // Retry transient Gemini / Render failures
+        if ((res.status === 502 || res.status === 503) && attempt + 1 < attempts) {
+          await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)))
+          continue
+        }
+        await parseError(res)
+      }
+      return res.json()
+    } catch (err) {
+      lastError = err
+      if (attempt + 1 < attempts) {
+        await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)))
+        continue
+      }
+    }
+  }
+
+  throw lastError || new Error('Request failed')
 }
 
 export async function fetchHistory({ limit = 30, category, riderId } = {}) {
