@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import logging
 import os
+import time
 from typing import Any
 
 from google import genai
@@ -12,6 +14,7 @@ from agent.twogele_prompt import TWOGELE_SYSTEM_PROMPT
 
 
 DEFAULT_MODEL = "gemma-4-26b-a4b-it"
+logger = logging.getLogger("twogele.model")
 
 
 class ModelEngine:
@@ -38,11 +41,13 @@ class ModelEngine:
 
     def _build_config(self) -> types.GenerateContentConfig:
         """Google AI Studio settings, tuned for safety-incident reporting."""
+        # MEDIUM thinking + no search tools: faster / more reliable on Render free tier.
+        thinking = (os.getenv("GEMMA_THINKING_LEVEL") or "MEDIUM").strip().upper()
         return types.GenerateContentConfig(
             temperature=0.6,
             top_p=0.85,
             thinking_config=types.ThinkingConfig(
-                thinking_level="HIGH",
+                thinking_level=thinking,
             ),
             safety_settings=[
                 types.SafetySetting(
@@ -63,9 +68,6 @@ class ModelEngine:
                     threshold="BLOCK_ONLY_HIGH",
                 ),
             ],
-            tools=[
-                types.Tool(google_search=types.GoogleSearch()),
-            ],
             system_instruction=[
                 types.Part.from_text(text=TWOGELE_SYSTEM_PROMPT),
             ],
@@ -78,6 +80,7 @@ class ModelEngine:
         audio_bytes: bytes | None = None,
         audio_mime_type: str = "audio/wav",
         hint: str | None = None,
+        retries: int = 2,
     ) -> dict[str, Any]:
         """Run a single multimodal turn against Gemma 4 (streamed, then joined)."""
         parts: list[types.Part] = []
@@ -96,6 +99,26 @@ class ModelEngine:
         if not parts:
             raise ValueError("Provide text and/or audio input.")
 
+        last_error: Exception | None = None
+        attempts = max(1, retries + 1)
+        for attempt in range(attempts):
+            try:
+                return self._generate_once(parts)
+            except Exception as exc:  # noqa: BLE001
+                last_error = exc
+                logger.warning(
+                    "Gemma attempt %s/%s failed: %s",
+                    attempt + 1,
+                    attempts,
+                    exc,
+                )
+                if attempt + 1 < attempts:
+                    time.sleep(1.2 * (attempt + 1))
+
+        assert last_error is not None
+        raise last_error
+
+    def _generate_once(self, parts: list[types.Part]) -> dict[str, Any]:
         chunks: list[str] = []
         for chunk in self.client.models.generate_content_stream(
             model=self.model,
