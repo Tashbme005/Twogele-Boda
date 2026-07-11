@@ -116,8 +116,12 @@ export default function MapView({
     // Leaflet needs a resize after layout settles
     const t = window.setTimeout(() => map.invalidateSize(), 80)
 
+    const onResize = () => map.invalidateSize()
+    window.addEventListener('resize', onResize)
+
     return () => {
       window.clearTimeout(t)
+      window.removeEventListener('resize', onResize)
       map.remove()
       mapRef.current = null
     }

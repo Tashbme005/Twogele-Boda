@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Icon } from './Icon'
 import '../styles/layout.css'
@@ -18,16 +19,41 @@ const MOBILE = [
   { to: '/settings', label: 'Settings', icon: 'settings' },
 ]
 
+const SIDEBAR_KEY = 'twogele-sidebar-open'
+
 export default function Layout() {
   const { pathname } = useLocation()
   const emergency = pathname.startsWith('/emergency')
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem(SIDEBAR_KEY)
+    return saved === null ? true : saved === 'true'
+  })
+
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_KEY, String(sidebarOpen))
+    // Let Leaflet maps reflow after content width changes.
+    const t = window.setTimeout(() => window.dispatchEvent(new Event('resize')), 240)
+    return () => window.clearTimeout(t)
+  }, [sidebarOpen])
 
   return (
-    <div className="shell">
+    <div className={`shell${sidebarOpen ? '' : ' sidebar-collapsed'}`}>
       <header className="topbar">
-        <div className="brand">
-          <Icon name="moped" filled />
-          <span>Twogele Boda AI</span>
+        <div className="topbar-left">
+          <button
+            className="icon-btn sidebar-toggle"
+            type="button"
+            aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+            aria-expanded={sidebarOpen}
+            aria-controls="rider-sidebar"
+            onClick={() => setSidebarOpen((open) => !open)}
+          >
+            <Icon name={sidebarOpen ? 'menu_open' : 'menu'} />
+          </button>
+          <div className="brand">
+            <Icon name="moped" filled />
+            <span>Twogele Boda AI</span>
+          </div>
         </div>
         <div className="topbar-actions">
           <div className={`status-pill ${emergency ? 'warn' : ''}`}>
@@ -43,7 +69,11 @@ export default function Layout() {
         </div>
       </header>
 
-      <aside className="sidebar">
+      <aside
+        id="rider-sidebar"
+        className={`sidebar${sidebarOpen ? ' is-open' : ' is-closed'}`}
+        aria-hidden={!sidebarOpen}
+      >
         <h2 className="sidebar-title">Rider Portal</h2>
         <p className="sidebar-sub">Kampala District</p>
         <nav>
@@ -53,6 +83,7 @@ export default function Layout() {
               to={item.to}
               end={item.end}
               className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+              tabIndex={sidebarOpen ? 0 : -1}
             >
               <Icon name={item.icon} />
               <span>{item.label}</span>
