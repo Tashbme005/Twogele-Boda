@@ -234,7 +234,7 @@ All Render files live in this folder: `Procfile`, `runtime.txt`, `render.yaml`, 
 | `GEMINI_API_KEY` | your Google AI Studio key |
 | `GEMMA_MODEL` | `gemma-4-26b-a4b-it` |
 | `DATABASE_URL` | Neon URL (`postgresql+psycopg://...` or `postgresql://...`) |
-| `CORS_ORIGINS` | `*` for first test, then your Vercel URL |
+| `CORS_ORIGINS` | include `https://twogele-boda.vercel.app` (plus localhost for local UI) |
 
 After deploy, open `https://YOUR-SERVICE.onrender.com/health`.
 

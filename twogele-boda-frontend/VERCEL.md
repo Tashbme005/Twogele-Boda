@@ -29,8 +29,10 @@ Vite + React SPA. Backend stays on Render (`https://twogele-boda-backend.onrende
 In the Render service env, set (or append) your frontend origin:
 
 ```env
-CORS_ORIGINS=http://localhost:5173,https://YOUR-APP.vercel.app
+CORS_ORIGINS=http://localhost:5173,https://twogele-boda.vercel.app
 ```
+
+Production frontend: [https://twogele-boda.vercel.app/](https://twogele-boda.vercel.app/)
 
 Redeploy the backend (or restart) so CORS picks up the change.
 

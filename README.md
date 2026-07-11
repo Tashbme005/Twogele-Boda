@@ -106,7 +106,7 @@ npm install
 npm run dev            # http://localhost:5173
 ```
 
-**Deploy on Vercel:** set Root Directory to `twogele-boda-frontend`, add the same `VITE_*` env vars, then follow **[twogele-boda-frontend/VERCEL.md](./twogele-boda-frontend/VERCEL.md)**. After deploy, add your `https://….vercel.app` origin to Render `CORS_ORIGINS` and Neon Auth trusted origins.
+**Live app:** [https://twogele-boda.vercel.app/](https://twogele-boda.vercel.app/) — deploy notes in **[twogele-boda-frontend/VERCEL.md](./twogele-boda-frontend/VERCEL.md)**. On Render, keep `https://twogele-boda.vercel.app` in `CORS_ORIGINS`, and allow that origin in Neon Auth.
 
 ---
 
