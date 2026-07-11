@@ -1,8 +1,16 @@
 # Twogele Boda Frontend
 
-Plain **React + Vite** UI for Twogele Boda. Talks to the FastAPI backend at `http://localhost:8000`.
+React + Vite Rider Portal UI inspired by the Stitch **Warm Urban Transit** designs.
 
-## Setup
+## Screens
+
+- **Dashboard** — Smart Dispatch & Ledger input wired to Gemma `/chat`
+- **Emergency Dispatch** — hazard map + live alerts + contacts
+- **Financial Insights** — earnings, fuel, activity
+- **Wealth Planner** — SACCO / investment suggestions
+- **Settings** — rider preferences
+
+## Run
 
 ```bash
 cd twogele-boda-frontend
@@ -10,20 +18,18 @@ npm install
 npm run dev
 ```
 
-App runs at **http://localhost:5173**.
+Open http://localhost:5173
 
-Optional env (create `.env.local`):
+Start the backend first:
+
+```bash
+cd ../twogele-boda-backend
+source .venv/bin/activate
+python server.py
+```
+
+Optional `.env.local`:
 
 ```env
 VITE_API_URL=http://localhost:8000
 ```
-
-## Scripts
-
-| Command | What it does |
-|---------|----------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Production build |
-| `npm run preview` | Preview production build |
-
-Start the backend first (`twogele-boda-backend`) so `/chat` works.

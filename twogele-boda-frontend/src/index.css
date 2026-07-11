@@ -1,38 +1,75 @@
 :root {
-  --bg: #f3f0e8;
-  --surface: #fffdf8;
-  --ink: #1a1a1a;
-  --muted: #5c5a55;
-  --line: #d9d4c8;
-  --accent: #c45c1a;
-  --accent-ink: #fffdf8;
-  --ok: #1f6b3a;
-  --err: #9b1c1c;
-  --font: "Segoe UI", "Helvetica Neue", sans-serif;
+  --background: #fcf9f2;
+  --surface: #fcf9f2;
+  --surface-low: #f6f3ec;
+  --surface-high: #ebe8e1;
+  --surface-lowest: #ffffff;
+  --on-surface: #1c1c18;
+  --on-surface-variant: #534434;
+  --outline: #867461;
+  --outline-variant: #d8c3ad;
+  --primary: #855300;
+  --primary-container: #f59e0b;
+  --on-primary-container: #613b00;
+  --secondary: #895033;
+  --secondary-container: #feb28f;
+  --on-secondary-container: #794227;
+  --error: #ba1a1a;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
+  --success: #047857;
+  --success-soft: #ecfdf5;
+  --shadow: rgba(69, 26, 3, 0.08);
 
-  font-family: var(--font);
-  line-height: 1.5;
-  color: var(--ink);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
+  --font-headline: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body: "Be Vietnam Pro", system-ui, sans-serif;
+
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --sidebar-w: 18rem;
+  --header-h: 4rem;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--on-surface);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
 }
 
-#root {
-  min-height: 100vh;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
 button,
-textarea {
+textarea,
+input,
+select {
   font: inherit;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
 }
