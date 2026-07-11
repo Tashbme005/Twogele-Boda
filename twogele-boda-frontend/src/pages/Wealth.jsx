@@ -1,3 +1,5 @@
+import { useMemo, useState } from 'react'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { Icon } from '../components/Icon'
 import '../styles/pages.css'
 
@@ -56,6 +58,31 @@ const LEDGER = [
 ]
 
 export default function Wealth() {
+  const navigate = useNavigate()
+  const { showToast } = useOutletContext() || {}
+  const [filter, setFilter] = useState('all')
+  const [savedExtra, setSavedExtra] = useState(0)
+
+  const rows = useMemo(() => {
+    if (filter === 'up') return LEDGER.filter((r) => r.pos)
+    if (filter === 'spent') return LEDGER.filter((r) => !r.pos)
+    return LEDGER
+  }, [filter])
+
+  function cycleFilter() {
+    setFilter((current) => {
+      const next = current === 'all' ? 'up' : current === 'up' ? 'spent' : 'all'
+      showToast?.(
+        next === 'all'
+          ? 'Showing all money history'
+          : next === 'up'
+            ? 'Showing money in only'
+            : 'Showing money out only',
+      )
+      return next
+    })
+  }
+
   return (
     <>
       <section className="page-head">
@@ -73,12 +100,15 @@ export default function Wealth() {
               <h3>New Bajaj Boxer 150</h3>
             </div>
             <div className="goal-amount">
-              <strong>UGX 4,875,000</strong>
+              <strong>UGX {(4875000 + savedExtra).toLocaleString()}</strong>
               <span>Saved of UGX 7,500,000</span>
             </div>
           </div>
           <div className="progress-track">
-            <div className="progress-fill" style={{ width: '65%' }} />
+            <div
+              className="progress-fill"
+              style={{ width: `${Math.min(100, ((4875000 + savedExtra) / 7500000) * 100)}%` }}
+            />
           </div>
           <div className="goal-meta">
             <div>
@@ -87,17 +117,25 @@ export default function Wealth() {
             </div>
             <div>
               <span>Saved this month</span>
-              <strong>UGX 450,000</strong>
+              <strong>UGX {(450000 + savedExtra).toLocaleString()}</strong>
             </div>
             <div>
               <span>How far</span>
-              <strong>65%</strong>
+              <strong>{Math.round(((4875000 + savedExtra) / 7500000) * 100)}%</strong>
             </div>
             <div>
               <span>Time left</span>
               <strong>About 4 months</strong>
             </div>
-            <button className="btn-primary" type="button" style={{ flex: '0 0 auto' }}>
+            <button
+              className="btn-primary"
+              type="button"
+              style={{ flex: '0 0 auto' }}
+              onClick={() => {
+                setSavedExtra((n) => n + 10000)
+                showToast?.('Added UGX 10,000 to your bike save.')
+              }}
+            >
               Add more save
             </button>
           </div>
@@ -107,7 +145,7 @@ export default function Wealth() {
           <article className="stat-card peach">
             <div>
               <span>All your money</span>
-              <strong>UGX 12,402,000</strong>
+              <strong>UGX {(12402000 + savedExtra).toLocaleString()}</strong>
               <em>+12% this month</em>
             </div>
             <Icon name="account_balance_wallet" />
@@ -126,11 +164,17 @@ export default function Wealth() {
       <section className="section">
         <div className="section-head">
           <h2>Ways to grow money</h2>
-          <button className="linkish" type="button">
+          <button
+            className="linkish"
+            type="button"
+            onClick={() => {
+              document.getElementById('invest-list')?.scrollIntoView({ behavior: 'smooth' })
+            }}
+          >
             See all →
           </button>
         </div>
-        <div className="invest-grid">
+        <div className="invest-grid" id="invest-list">
           {INVESTMENTS.map((item) => (
             <article className="panel invest-card" key={item.title}>
               <div className="invest-icon">
@@ -142,7 +186,11 @@ export default function Wealth() {
                 <span>You may earn</span>
                 <strong>{item.rate}</strong>
               </div>
-              <button className="btn-outline" type="button">
+              <button
+                className="btn-outline"
+                type="button"
+                onClick={() => showToast?.(`${item.title}: we will help you start this soon.`)}
+              >
                 {item.cta}
               </button>
             </article>
@@ -155,8 +203,9 @@ export default function Wealth() {
           <h2>
             <Icon name="analytics" /> Money history
           </h2>
-          <button className="chip" type="button">
-            <Icon name="filter_list" /> Filter
+          <button className="chip" type="button" onClick={cycleFilter}>
+            <Icon name="filter_list" />{' '}
+            {filter === 'all' ? 'All' : filter === 'up' ? 'Money in' : 'Money out'}
           </button>
         </div>
         <div className="table-wrap">
@@ -171,7 +220,7 @@ export default function Wealth() {
               </tr>
             </thead>
             <tbody>
-              {LEDGER.map((row) => (
+              {rows.map((row) => (
                 <tr key={row.when + row.title}>
                   <td>{row.when}</td>
                   <td>
@@ -187,6 +236,11 @@ export default function Wealth() {
               ))}
             </tbody>
           </table>
+        </div>
+        <div style={{ padding: '1rem' }}>
+          <button className="btn-outline" type="button" onClick={() => navigate('/app/finance')}>
+            Open My money
+          </button>
         </div>
       </section>
     </>

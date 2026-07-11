@@ -10,7 +10,7 @@ function getSpeechRecognition() {
  * Gemma 4 26B via AI Studio does not accept raw audio, so we transcribe
  * in the browser and send text to /chat.
  */
-export function useVoiceRecorder() {
+export function useVoiceRecorder(speechLang = 'en-UG') {
   const [recording, setRecording] = useState(false)
   const [supported, setSupported] = useState(true)
   const [seconds, setSeconds] = useState(0)
@@ -19,6 +19,11 @@ export function useVoiceRecorder() {
   const timerRef = useRef(null)
   const finalRef = useRef('')
   const stopResolverRef = useRef(null)
+  const speechLangRef = useRef(speechLang)
+
+  useEffect(() => {
+    speechLangRef.current = speechLang
+  }, [speechLang])
 
   useEffect(() => {
     setSupported(Boolean(getSpeechRecognition()))
@@ -53,7 +58,7 @@ export function useVoiceRecorder() {
     const recognition = new SpeechRecognition()
     recognition.continuous = true
     recognition.interimResults = true
-    recognition.lang = 'en-UG'
+    recognition.lang = speechLangRef.current || 'en-UG'
     recognition.maxAlternatives = 1
 
     recognition.onresult = (event) => {

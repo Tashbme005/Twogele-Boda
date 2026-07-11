@@ -1,47 +1,75 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Icon } from '../components/Icon'
+import { useLanguage } from '../i18n/LanguageContext'
+import { useAuth } from '../lib/AuthContext'
 import '../styles/pages.css'
 
 export default function Settings() {
+  const navigate = useNavigate()
+  const { user, signOut } = useAuth()
+  const { t, language, setLanguage, languages } = useLanguage()
   const [profile, setProfile] = useState({
-    name: 'Musa Kasule',
+    name: user?.name || 'Musa Kasule',
     stage: 'Kiwatule Stage A',
     plate: 'UEE 492P',
   })
-  const [language, setLanguage] = useState('en')
   const [safetyAlerts, setSafetyAlerts] = useState(true)
   const [financeAlerts, setFinanceAlerts] = useState(true)
   const [battery, setBattery] = useState('Normal')
   const [routing, setRouting] = useState(true)
+  const [loggingOut, setLoggingOut] = useState(false)
+  const [savedProfile, setSavedProfile] = useState(profile)
+  const [note, setNote] = useState('')
+
+  async function handleLogout() {
+    setLoggingOut(true)
+    try {
+      await signOut()
+      navigate('/login', { replace: true })
+    } finally {
+      setLoggingOut(false)
+    }
+  }
+
+  function handleSave() {
+    setSavedProfile(profile)
+    setNote(t('savedOk'))
+  }
+
+  function handleCancel() {
+    setProfile(savedProfile)
+    setNote(t('cancelledOk'))
+  }
 
   return (
     <>
       <section className="page-head">
-        <h1>My details</h1>
-        <p>Change your name, bike, and alerts.</p>
+        <h1>{t('myDetails')}</h1>
+        <p>{t('changeDetails')}</p>
       </section>
 
       <div className="settings-grid">
         <section className="panel">
           <h3 className="card-title">
-            <Icon name="person" /> About you
+            <Icon name="person" /> {t('aboutYou')}
           </h3>
           <label className="field">
-            <span>Full Name</span>
+            <span>{t('fullName')}</span>
             <input
               value={profile.name}
               onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
             />
           </label>
           <label className="field">
-            <span>Stage / Location</span>
+            <span>{t('stageLocation')}</span>
             <input
               value={profile.stage}
               onChange={(e) => setProfile((p) => ({ ...p, stage: e.target.value }))}
             />
           </label>
           <label className="field">
-            <span>Plate Number</span>
+            <span>{t('plateNumber')}</span>
             <input
               value={profile.plate}
               onChange={(e) => setProfile((p) => ({ ...p, plate: e.target.value }))}
@@ -51,13 +79,12 @@ export default function Settings() {
 
         <section className="panel">
           <h3 className="card-title">
-            <Icon name="language" /> Language
+            <Icon name="language" /> {t('language')}
           </h3>
-          {[
-            { id: 'en', label: 'English' },
-            { id: 'lg', label: 'Luganda' },
-            { id: 'sw', label: 'Swahili' },
-          ].map((opt) => (
+          <p className="empty-note" style={{ marginTop: 0 }}>
+            {t('languageHint')}
+          </p>
+          {languages.map((opt) => (
             <label className="radio-row" key={opt.id}>
               <input
                 type="radio"
@@ -65,20 +92,20 @@ export default function Settings() {
                 checked={language === opt.id}
                 onChange={() => setLanguage(opt.id)}
               />
-              <span>{opt.label}</span>
+              <span>{opt.native}</span>
             </label>
           ))}
         </section>
 
         <section className="panel">
           <h3 className="card-title">
-            <Icon name="notifications" /> Notifications
+            <Icon name="notifications" /> {t('notificationsTitle')}
           </h3>
           <div className="settings-row">
             <div>
-              <strong>Danger alerts</strong>
+              <strong>{t('dangerAlerts')}</strong>
               <p className="empty-note" style={{ margin: '0.2rem 0 0' }}>
-                Tell me about bad roads and jams
+                {t('dangerAlertsHint')}
               </p>
             </div>
             <button
@@ -91,9 +118,9 @@ export default function Settings() {
           </div>
           <div className="settings-row">
             <div>
-              <strong>Money updates</strong>
+              <strong>{t('moneyUpdates')}</strong>
               <p className="empty-note" style={{ margin: '0.2rem 0 0' }}>
-                Daily and weekly money summary
+                {t('moneyUpdatesHint')}
               </p>
             </div>
             <button
@@ -108,18 +135,16 @@ export default function Settings() {
 
         <section className="panel gemma-card">
           <h3 className="card-title">
-            <Icon name="bolt" /> Smart help{' '}
+            <Icon name="bolt" /> {t('smartHelp')}{' '}
             <span className="badge critical" style={{ marginLeft: '0.5rem' }}>
               NEW
             </span>
           </h3>
           <div className="tip-card" style={{ marginBottom: '1rem' }}>
-            <p style={{ margin: 0 }}>
-              Helps you find busy places and safer roads in Kampala.
-            </p>
+            <p style={{ margin: 0 }}>{t('smartHelpBody')}</p>
           </div>
           <label className="field">
-            <span>Phone battery</span>
+            <span>{t('phoneBattery')}</span>
             <select value={battery} onChange={(e) => setBattery(e.target.value)}>
               <option>Normal</option>
               <option>Strong</option>
@@ -128,9 +153,9 @@ export default function Settings() {
           </label>
           <div className="settings-row">
             <div>
-              <strong>Safer routes</strong>
+              <strong>{t('saferRoutes')}</strong>
               <p className="empty-note" style={{ margin: '0.2rem 0 0' }}>
-                Suggest better roads in Kampala
+                {t('saferRoutesHint')}
               </p>
             </div>
             <button
@@ -145,13 +170,27 @@ export default function Settings() {
       </div>
 
       <div className="settings-actions">
-        <button className="btn-primary" type="button">
-          <Icon name="save" /> Save
+        <button className="btn-primary" type="button" onClick={handleSave}>
+          <Icon name="save" /> {t('save')}
         </button>
-        <button className="btn-outline" type="button">
-          Cancel
+        <button className="btn-outline" type="button" onClick={handleCancel}>
+          {t('cancel')}
+        </button>
+        <button className="btn-outline" type="button" onClick={handleLogout} disabled={loggingOut}>
+          <Icon name="logout" />
+          {loggingOut ? t('loggingOut') : t('logOut')}
         </button>
       </div>
+      {note && (
+        <p className="empty-note" style={{ marginTop: '0.75rem' }}>
+          {note}
+        </p>
+      )}
+      {user?.email && (
+        <p className="empty-note" style={{ marginTop: '1rem' }}>
+          {t('signedInAs', { email: user.email })}
+        </p>
+      )}
     </>
   )
 }

@@ -4,38 +4,33 @@ import kampalaHero from '../assets/stitch/kampala-boda.png'
 import { Icon } from '../components/Icon'
 import MapView, { DEMAND_MARKERS, HAZARD_MARKERS } from '../components/MapView'
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder'
+import { useLanguage } from '../i18n/LanguageContext'
 import {
   chatWithGemma,
   classifyResponse,
   extractField,
   extractJsonBlock,
 } from '../lib/api'
+import { useAuth } from '../lib/AuthContext'
 import '../styles/pages.css'
 
-const SAVE_IDEAS = [
-  'Boda SACCO (save with other riders)',
-  'MTN or Airtel money save',
-  'Government save plans',
-]
-
-const MONEY_LABELS = {
-  'Fuel expenses': 'Fuel',
-  'Income saved': 'Money saved',
-  'Daily expenses': "Today's spending",
-}
-
-function simpleUrgency(raw) {
+function simpleUrgency(raw, t) {
   const text = (raw || '').toLowerCase()
-  if (text.includes('critical') || text.includes('high')) return 'URGENT'
-  if (text.includes('medium') || text.includes('moderate')) return 'CAREFUL'
-  if (text.includes('low')) return 'SMALL'
-  return 'URGENT'
+  if (text.includes('critical') || text.includes('high')) return t('urgent')
+  if (text.includes('medium') || text.includes('moderate')) return t('careful')
+  if (text.includes('low')) return t('small')
+  return t('urgent')
 }
 
-function moneyRows(json) {
+function moneyRows(json, t) {
   if (!json || typeof json !== 'object') return []
+  const labels = {
+    'Fuel expenses': t('fuel'),
+    'Income saved': t('moneySaved'),
+    'Daily expenses': t('todaySpend'),
+  }
   return Object.entries(json).map(([key, value]) => ({
-    label: MONEY_LABELS[key] || key,
+    label: labels[key] || key,
     value: typeof value === 'number' ? `UGX ${Number(value).toLocaleString()}` : String(value),
   }))
 }
@@ -56,13 +51,26 @@ function applyModelResult(data, setResult) {
 }
 
 export default function Dashboard() {
+  const { riderId } = useAuth()
+  const { t, language, speechLang } = useLanguage()
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
   const [result, setResult] = useState(null)
   const { recording, supported, seconds, liveTranscript, start, stop } =
-    useVoiceRecorder()
+    useVoiceRecorder(speechLang)
+
+  const saveIdeas =
+    language === 'lg'
+      ? ['SACCO ya boda', 'Tereka ku MTN/Airtel', 'Enteekateeka za gavumenti']
+      : language === 'sw'
+        ? ['SACCO ya boda', 'Weka kwa MTN/Airtel', 'Mipango ya serikali']
+        : [
+            'Boda SACCO (save with other riders)',
+            'MTN or Airtel money save',
+            'Government save plans',
+          ]
 
   async function handleProcess(event) {
     event.preventDefault()
@@ -71,14 +79,14 @@ export default function Dashboard() {
 
     setLoading(true)
     setError('')
-    setStatus('Please wait… reading your message')
+    setStatus(t('pleaseWaitReading'))
 
     try {
-      const data = await chatWithGemma(text)
+      const data = await chatWithGemma(text, { riderId, language })
       applyModelResult(data, setResult)
-      setStatus('Done')
+      setStatus(t('done'))
     } catch (err) {
-      setError(err.message || 'Sorry, something went wrong. Try again.')
+      setError(err.message || t('sorryWrong'))
       setResult(null)
       setStatus('')
     } finally {
@@ -90,7 +98,7 @@ export default function Dashboard() {
     if (loading) return
 
     if (!supported) {
-      setError('Voice works best in Chrome or Edge. You can also type.')
+      setError(t('voiceNeedsChrome'))
       return
     }
 
@@ -99,12 +107,10 @@ export default function Dashboard() {
     if (!recording) {
       try {
         await start()
-        setStatus('Listening… speak, then tap the mic again')
+        setStatus(t('listening', { seconds: 0 }))
       } catch (err) {
         setError(
-          err.name === 'NotAllowedError'
-            ? 'Please allow the phone mic, then try again.'
-            : err.message || 'Could not open the mic',
+          err.name === 'NotAllowedError' ? t('allowMic') : err.message || t('couldNotMic'),
         )
         setStatus('')
       }
@@ -112,7 +118,7 @@ export default function Dashboard() {
     }
 
     setLoading(true)
-    setStatus('Please wait… sending what you said')
+    setStatus(t('pleaseWaitVoice'))
 
     try {
       const captured = await stop()
@@ -124,15 +130,15 @@ export default function Dashboard() {
       const combined = [message.trim(), spoken].filter(Boolean).join(' ').trim()
 
       if (!combined) {
-        throw new Error('We did not hear you. Tap mic, speak clearly, then tap again.')
+        throw new Error(t('noSpeech'))
       }
 
       setMessage(combined)
-      const data = await chatWithGemma(combined, { source: 'voice' })
+      const data = await chatWithGemma(combined, { source: 'voice', riderId, language })
       applyModelResult(data, setResult)
-      setStatus('Done')
+      setStatus(t('done'))
     } catch (err) {
-      setError(err.message || 'Sorry, voice failed. Try typing instead.')
+      setError(err.message || t('voiceFailed'))
       setResult(null)
       setStatus('')
     } finally {
@@ -143,21 +149,19 @@ export default function Dashboard() {
   const showSafety = !result || result.kind === 'safety' || result.kind === 'unknown'
   const showWealth = !result || result.kind === 'expense' || result.kind === 'unknown'
   const displayText = recording && liveTranscript ? liveTranscript : message
-  const micLabel = recording
-    ? `Stop & send (${seconds}s)`
-    : 'Speak with mic'
-  const moneyList = moneyRows(result?.json)
+  const micLabel = recording ? t('stopSend', { seconds }) : t('speakWithMic')
+  const moneyList = moneyRows(result?.json, t)
 
   return (
     <>
       <section className="page-head">
-        <h1>TWOGELE BODA</h1>
-        <p>Help for road danger and your daily money</p>
+        <h1>{t('brand').toUpperCase()}</h1>
+        <p>{t('helpRoadMoney')}</p>
       </section>
 
       <section className="panel composer">
         <label className="panel-label" htmlFor="dispatch-input">
-          Tell us what happened — type or speak
+          {t('tellWhatHappened')}
         </label>
         <form onSubmit={handleProcess}>
           <textarea
@@ -165,7 +169,7 @@ export default function Dashboard() {
             value={displayText}
             onChange={(e) => setMessage(e.target.value)}
             disabled={recording}
-            placeholder="Example: 'Mwana I used 22k for fuel today' or 'Bad pothole on Jinja Road near the lights'"
+            placeholder={t('placeholderDispatch')}
           />
           <div className="composer-actions">
             <button
@@ -174,7 +178,7 @@ export default function Dashboard() {
               disabled={loading || recording || !message.trim()}
             >
               <Icon name="bolt" filled />
-              {loading && !recording ? 'Please wait…' : 'Send'}
+              {loading && !recording ? t('pleaseWait') : t('send')}
             </button>
             <button
               className={`btn-mic${recording ? ' recording' : ''}`}
@@ -189,9 +193,7 @@ export default function Dashboard() {
           </div>
         </form>
         {recording && (
-          <p className="voice-status recording-status">
-            Listening… {seconds}s — tap the mic again when you finish talking
-          </p>
+          <p className="voice-status recording-status">{t('listening', { seconds })}</p>
         )}
         {!recording && status && <p className="voice-status">{status}</p>}
         {error && <p className="error-text">{error}</p>}
@@ -204,10 +206,10 @@ export default function Dashboard() {
               <div className="track-head">
                 <h3>
                   <Icon name="warning" />
-                  1. Road danger
+                  {t('roadDanger')}
                 </h3>
                 <span className="badge critical">
-                  {result?.kind === 'safety' ? simpleUrgency(result.urgency) : 'READY'}
+                  {result?.kind === 'safety' ? simpleUrgency(result.urgency, t) : t('ready')}
                 </span>
               </div>
 
@@ -215,27 +217,24 @@ export default function Dashboard() {
                 <>
                   <div className="meta-grid">
                     <div className="meta-box">
-                      <span>What is wrong</span>
-                      <strong>{result.hazard || 'Road problem'}</strong>
+                      <span>{t('whatWrong')}</span>
+                      <strong>{result.hazard || t('roadProblem')}</strong>
                     </div>
                     <div className="meta-box">
-                      <span>Where</span>
-                      <strong>{result.location || 'Kampala'}</strong>
+                      <span>{t('where')}</span>
+                      <strong>{result.location || t('kampala')}</strong>
                     </div>
                   </div>
                   <div className="authority">
                     <Icon name="policy" />
                     <div>
-                      <strong>Who can help</strong>
+                      <strong>{t('whoHelp')}</strong>
                       <p>{result.authority || result.response}</p>
                     </div>
                   </div>
                 </>
               ) : (
-                <p className="empty-note">
-                  Tell us about a bad road, accident, or road block. Help and who to call will show
-                  here.
-                </p>
+                <p className="empty-note">{t('safetyEmpty')}</p>
               )}
             </div>
           </article>
@@ -247,17 +246,17 @@ export default function Dashboard() {
               <div className="track-head">
                 <h3>
                   <Icon name="account_balance_wallet" />
-                  2. Your money
+                  {t('yourMoney')}
                 </h3>
                 <span className="badge verified">
-                  {result?.kind === 'expense' ? 'SAVED' : 'READY'}
+                  {result?.kind === 'expense' ? t('saved') : t('ready')}
                 </span>
               </div>
 
               {result?.kind === 'expense' ? (
                 <>
                   <p className="panel-label" style={{ marginBottom: '0.5rem' }}>
-                    Today&apos;s money record
+                    {t('todayMoney')}
                   </p>
                   <div className="ledger">
                     {moneyList.length > 0 ? (
@@ -280,7 +279,7 @@ export default function Dashboard() {
                       <Icon name="show_chart" />
                     </div>
                     <div>
-                      <span>If you save like this for 30 days</span>
+                      <span>{t('ifSave30')}</span>
                       <strong>
                         {typeof result.json === 'object' && result.json['Income saved']
                           ? `UGX ${(Number(result.json['Income saved']) * 30).toLocaleString()}`
@@ -288,9 +287,9 @@ export default function Dashboard() {
                       </strong>
                     </div>
                   </div>
-                  <p className="panel-label">Ways to grow your money</p>
+                  <p className="panel-label">{t('waysGrow')}</p>
                   <div className="chips">
-                    {SAVE_IDEAS.map((item) => (
+                    {saveIdeas.map((item) => (
                       <span className="chip" key={item}>
                         {item}
                       </span>
@@ -298,10 +297,7 @@ export default function Dashboard() {
                   </div>
                 </>
               ) : (
-                <p className="empty-note">
-                  Tell us about fuel, tips, or money you kept. Your simple money numbers will show
-                  here.
-                </p>
+                <p className="empty-note">{t('moneyEmpty')}</p>
               )}
             </div>
           </article>
@@ -312,10 +308,10 @@ export default function Dashboard() {
         <div className="section-head">
           <h4>
             <Icon name="explore" />
-            Busy places &amp; danger spots
+            {t('busyPlaces')}
           </h4>
-          <Link className="linkish" to="/emergency">
-            Open big map
+          <Link className="linkish" to="/app/emergency">
+            {t('openBigMap')}
           </Link>
         </div>
         <MapView
@@ -324,8 +320,8 @@ export default function Dashboard() {
           className="dashboard-map"
         />
         <div className="hotspot-legend-row">
-          <div>🟢 Many customers: Katwe</div>
-          <div>🔴 Danger: Clock Tower</div>
+          <div>🟢 {t('manyCustomers')}</div>
+          <div>🔴 {t('dangerClock')}</div>
         </div>
       </section>
 
@@ -333,15 +329,12 @@ export default function Dashboard() {
         <img src={kampalaHero} alt="Kampala boda rider on the road" />
         <div className="overlay" />
         <div className="copy">
-          <h3>Made for Kampala boda riders</h3>
-          <p>Simple help for the road and your pocket.</p>
+          <h3>{t('madeForRiders')}</h3>
+          <p>{t('simpleHelp')}</p>
         </div>
       </section>
 
-      <p className="disclaimer">
-        This app helps you, but it is not the police, hospital, or a bank. For Build with Gemma
-        Uganda.
-      </p>
+      <p className="disclaimer">{t('disclaimer')}</p>
       <div className="partners">
         <span>KCCA</span>
         <span>GEMMA</span>

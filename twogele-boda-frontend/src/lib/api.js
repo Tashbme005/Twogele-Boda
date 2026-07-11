@@ -6,11 +6,14 @@ async function parseError(res) {
   throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
 }
 
-export async function chatWithGemma(message, { source = 'text', riderId = 'anonymous' } = {}) {
+export async function chatWithGemma(
+  message,
+  { source = 'text', riderId = 'anonymous', language = 'en' } = {},
+) {
   const res = await fetch(`${API_BASE}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, source, rider_id: riderId }),
+    body: JSON.stringify({ message, source, rider_id: riderId, language }),
   })
 
   if (!res.ok) await parseError(res)

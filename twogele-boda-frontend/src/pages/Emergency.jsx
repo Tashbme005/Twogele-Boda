@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { Icon } from '../components/Icon'
 import MapView, { DEMAND_MARKERS, HAZARD_MARKERS } from '../components/MapView'
 import '../styles/pages.css'
@@ -34,7 +35,10 @@ const CONTACTS = [
 ]
 
 export default function Emergency() {
+  const navigate = useNavigate()
+  const { showToast } = useOutletContext() || {}
   const [filter, setFilter] = useState('hazards')
+  const [selected, setSelected] = useState(null)
   const markers = useMemo(
     () => (filter === 'traffic' ? [...HAZARD_MARKERS, ...DEMAND_MARKERS] : HAZARD_MARKERS),
     [filter],
@@ -62,7 +66,14 @@ export default function Emergency() {
 
         <MapView markers={markers} zoom={13} className="dispatch-map-canvas" />
 
-        <button className="report-fab" type="button">
+        <button
+          className="report-fab"
+          type="button"
+          onClick={() => {
+            showToast?.('Open Home and tell Twogele about the road problem.')
+            navigate('/app')
+          }}
+        >
           <Icon name="add_alert" filled />
           Report a problem
         </button>
@@ -74,11 +85,32 @@ export default function Emergency() {
             <h2>
               Warnings now <span className="badge critical">NOW</span>
             </h2>
-            <Icon name="tune" />
+            <button
+              className="icon-btn"
+              type="button"
+              aria-label="Filter warnings"
+              onClick={() =>
+                setFilter((f) => {
+                  const next = f === 'hazards' ? 'traffic' : 'hazards'
+                  showToast?.(next === 'traffic' ? 'Showing traffic too' : 'Showing danger spots')
+                  return next
+                })
+              }
+            >
+              <Icon name="tune" />
+            </button>
           </div>
           <div className="list">
             {ALERTS.map((alert) => (
-              <article className={`alert-row ${alert.tone}`} key={alert.title}>
+              <button
+                className={`alert-row ${alert.tone}${selected === alert.title ? ' selected' : ''}`}
+                type="button"
+                key={alert.title}
+                onClick={() => {
+                  setSelected(alert.title)
+                  showToast?.(alert.title)
+                }}
+              >
                 <div className={`alert-icon ${alert.tone}`}>
                   <Icon name={alert.icon} />
                 </div>
@@ -89,7 +121,7 @@ export default function Emergency() {
                   </div>
                   <p>{alert.body}</p>
                 </div>
-              </article>
+              </button>
             ))}
           </div>
         </div>

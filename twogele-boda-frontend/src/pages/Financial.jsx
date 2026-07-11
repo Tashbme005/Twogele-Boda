@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { Icon } from '../components/Icon'
+import { useLanguage } from '../i18n/LanguageContext'
 import { fetchHistory } from '../lib/api'
+import { useAuth } from '../lib/AuthContext'
 import '../styles/pages.css'
 
 function formatAmount(ledger) {
@@ -19,6 +22,10 @@ function activityLabel(item) {
 }
 
 export default function Financial() {
+  const navigate = useNavigate()
+  const { showToast } = useOutletContext() || {}
+  const { riderId } = useAuth()
+  const { t } = useLanguage()
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -27,7 +34,7 @@ export default function Financial() {
     let cancelled = false
     ;(async () => {
       try {
-        const rows = await fetchHistory({ limit: 20, category: 'expense' })
+        const rows = await fetchHistory({ limit: 20, category: 'expense', riderId })
         if (!cancelled) setHistory(rows)
       } catch (err) {
         if (!cancelled) setError(err.message || 'Could not load history')
@@ -38,7 +45,7 @@ export default function Financial() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [riderId])
 
   const activity = useMemo(
     () =>
@@ -71,32 +78,32 @@ export default function Financial() {
   return (
     <>
       <section className="page-head">
-        <h1>My money</h1>
-        <p>See what you earned and what you spent.</p>
+        <h1>{t('myMoney')}</h1>
+        <p>{t('seeEarnedSpent')}</p>
       </section>
 
       <div className="metrics">
         <article className="metric">
-          <span>Money you kept</span>
+          <span>{t('moneyKept')}</span>
           <strong>UGX {totals.saved.toLocaleString()}</strong>
-          <em>From what you told us</em>
+          <em>{t('fromWhatTold')}</em>
         </article>
         <article className="metric">
-          <span>Fuel spent</span>
+          <span>{t('fuelSpent')}</span>
           <strong>UGX {totals.fuel.toLocaleString()}</strong>
-          <em>All fuel you recorded</em>
+          <em>{t('allFuelLogged')}</em>
         </article>
         <article className="metric">
-          <span>Busy time</span>
+          <span>{t('busyTime')}</span>
           <strong>07:00 – 09:30</strong>
-          <em>Morning rush starts soon</em>
+          <em>{t('morningRush')}</em>
         </article>
       </div>
 
       <section className="section panel">
         <div className="section-head">
-          <h4>Money in vs money out</h4>
-          <span className="empty-note">Last 7 days</span>
+          <h4>{t('moneyInOut')}</h4>
+          <span className="empty-note">{t('last7')}</span>
         </div>
         <div
           style={{
@@ -137,22 +144,22 @@ export default function Financial() {
       </section>
 
       <section className="section tip-card" style={{ padding: '1.25rem' }}>
-        <strong>TIPS TO EARN MORE</strong>
+        <strong>{t('tipsEarn')}</strong>
         <div className="two-col" style={{ marginTop: '0.85rem' }}>
           <div className="panel" style={{ boxShadow: 'none' }}>
             <h4 style={{ margin: '0 0 0.35rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
-              <Icon name="campaign" /> Many customers
+              <Icon name="campaign" /> {t('manyCustomersTitle')}
             </h4>
             <p className="empty-note" style={{ margin: 0 }}>
-              Kololo is busy tonight because of a food festival.
+              {t('kololoBusy')}
             </p>
           </div>
           <div className="panel" style={{ boxShadow: 'none' }}>
             <h4 style={{ margin: '0 0 0.35rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
-              <Icon name="tire_repair" /> Save fuel
+              <Icon name="tire_repair" /> {t('saveFuel')}
             </h4>
             <p className="empty-note" style={{ margin: 0 }}>
-              You are using a bit more fuel. Check your tyre air before morning.
+              {t('fuelTip')}
             </p>
           </div>
         </div>
@@ -161,13 +168,13 @@ export default function Financial() {
       <div className="two-col section">
         <section className="panel">
           <div className="section-head">
-            <h4>What you recorded</h4>
-            <span className="empty-note">{loading ? 'Loading…' : `${activity.length} saved`}</span>
+            <h4>{t('whatRecorded')}</h4>
+            <span className="empty-note">{loading ? t('loading') : `${activity.length} saved`}</span>
           </div>
           {error && <p className="error-text">{error}</p>}
           <div className="list">
             {!loading && activity.length === 0 && !error && (
-              <p className="empty-note">Nothing yet. On Home, tell us about fuel or tips.</p>
+              <p className="empty-note">{t('nothingYet')}</p>
             )}
             {activity.map((item) => (
               <div className="list-item" key={item.id}>
@@ -179,8 +186,8 @@ export default function Financial() {
         </section>
 
         <section className="panel" style={{ textAlign: 'center' }}>
-          <h4 style={{ marginTop: 0, fontFamily: 'var(--font-headline)' }}>New bike dream</h4>
-          <p className="empty-note">Goal: UGX 5,000,000</p>
+          <h4 style={{ marginTop: 0, fontFamily: 'var(--font-headline)' }}>{t('newBikeDream')}</h4>
+          <p className="empty-note">{t('goal')}</p>
           <div
             style={{
               width: '8rem',
@@ -197,8 +204,16 @@ export default function Financial() {
           >
             75%
           </div>
-          <button className="btn-primary" type="button" style={{ width: '100%' }}>
-            Put money in
+          <button
+            className="btn-primary"
+            type="button"
+            style={{ width: '100%' }}
+            onClick={() => {
+              showToast?.('Open Save & grow to add money to your bike goal.')
+              navigate('/app/wealth')
+            }}
+          >
+            {t('putMoneyIn')}
           </button>
         </section>
       </div>

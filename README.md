@@ -97,13 +97,26 @@ Full backend docs, API examples, and prompt tests: **[twogele-boda-backend/READM
 
 ---
 
+## Quick Start (Frontend)
+
+```bash
+cd twogele-boda-frontend
+cp .env.example .env   # VITE_API_URL + VITE_NEON_AUTH_URL
+npm install
+npm run dev            # http://localhost:5173
+```
+
+**Deploy on Vercel:** set Root Directory to `twogele-boda-frontend`, add the same `VITE_*` env vars, then follow **[twogele-boda-frontend/VERCEL.md](./twogele-boda-frontend/VERCEL.md)**. After deploy, add your `https://….vercel.app` origin to Render `CORS_ORIGINS` and Neon Auth trusted origins.
+
+---
+
 ## Tech Stack
 
 | Layer | Tech |
 |-------|------|
 | Model | Gemma 4 (`gemma-4-26b-a4b-it`) via Google AI Studio |
-| Backend | FastAPI, python-dotenv, google-genai |
-| Frontend | React / React Native (in progress) |
+| Backend | FastAPI, SQLAlchemy, Neon Postgres, google-genai |
+| Frontend | React + Vite (Vercel) |
 
 ---
 
