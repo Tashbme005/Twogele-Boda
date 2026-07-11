@@ -1,5 +1,11 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
+async function parseError(res) {
+  const data = await res.json().catch(() => ({}))
+  const detail = data.detail || `Request failed (${res.status})`
+  throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
+}
+
 export async function chatWithGemma(message) {
   const res = await fetch(`${API_BASE}/chat`, {
     method: 'POST',
@@ -7,13 +13,22 @@ export async function chatWithGemma(message) {
     body: JSON.stringify({ message }),
   })
 
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) {
-    const detail = data.detail || `Request failed (${res.status})`
-    throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
-  }
+  if (!res.ok) await parseError(res)
+  return res.json()
+}
 
-  return data
+export async function chatWithGemmaAudio({ message = '', audioBlob, filename = 'rider-voice.webm' }) {
+  const form = new FormData()
+  if (message.trim()) form.append('message', message.trim())
+  form.append('audio', audioBlob, filename)
+
+  const res = await fetch(`${API_BASE}/chat/multimodal`, {
+    method: 'POST',
+    body: form,
+  })
+
+  if (!res.ok) await parseError(res)
+  return res.json()
 }
 
 export function classifyResponse(text = '') {

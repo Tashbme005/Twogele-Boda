@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import kampalaHero from '../assets/stitch/kampala-boda.png'
 import { Icon } from '../components/Icon'
 import MapView, { DEMAND_MARKERS, HAZARD_MARKERS } from '../components/MapView'
+import { useVoiceRecorder } from '../hooks/useVoiceRecorder'
 import {
   chatWithGemma,
+  chatWithGemmaAudio,
   classifyResponse,
   extractField,
   extractJsonBlock,
@@ -17,37 +19,105 @@ const INVESTMENTS = [
   'UG Treasury Bills',
 ]
 
+function applyModelResult(data, setResult) {
+  const response = data.response || data.raw || ''
+  const kind = classifyResponse(response)
+  setResult({
+    kind,
+    response,
+    thinking: data.thinking,
+    json: extractJsonBlock(response),
+    hazard: extractField(response, 'Hazard Type'),
+    location: extractField(response, 'Location'),
+    urgency: extractField(response, 'Urgency'),
+    authority: extractField(response, 'Responsible Body'),
+  })
+}
+
+function extensionForMime(mimeType = '') {
+  if (mimeType.includes('mp4')) return 'mp4'
+  if (mimeType.includes('ogg')) return 'ogg'
+  return 'webm'
+}
+
 export default function Dashboard() {
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [status, setStatus] = useState('')
   const [result, setResult] = useState(null)
+  const { recording, supported, seconds, start, stop } = useVoiceRecorder()
 
   async function handleProcess(event) {
     event.preventDefault()
     const text = message.trim()
-    if (!text || loading) return
+    if (!text || loading || recording) return
 
     setLoading(true)
     setError('')
+    setStatus('Processing text with Gemma 4…')
 
     try {
       const data = await chatWithGemma(text)
-      const response = data.response || data.raw || ''
-      const kind = classifyResponse(response)
-      setResult({
-        kind,
-        response,
-        thinking: data.thinking,
-        json: extractJsonBlock(response),
-        hazard: extractField(response, 'Hazard Type'),
-        location: extractField(response, 'Location'),
-        urgency: extractField(response, 'Urgency'),
-        authority: extractField(response, 'Responsible Body'),
-      })
+      applyModelResult(data, setResult)
+      setStatus('Text dispatch complete')
     } catch (err) {
       setError(err.message || 'Could not reach Gemma backend')
       setResult(null)
+      setStatus('')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleMicClick() {
+    if (loading) return
+
+    if (!supported) {
+      setError('Voice recording is not supported in this browser. Try Chrome or Edge.')
+      return
+    }
+
+    setError('')
+
+    if (!recording) {
+      try {
+        await start()
+        setStatus('Listening… tap the mic again to send')
+      } catch (err) {
+        setError(
+          err.name === 'NotAllowedError'
+            ? 'Microphone permission denied. Allow mic access and try again.'
+            : err.message || 'Could not start the microphone',
+        )
+        setStatus('')
+      }
+      return
+    }
+
+    setLoading(true)
+    setStatus('Sending voice note to Gemma 4…')
+
+    try {
+      const captured = await stop()
+      if (!captured?.blob || captured.blob.size < 1) {
+        throw new Error('No audio captured. Hold a bit longer, then stop.')
+      }
+
+      const data = await chatWithGemmaAudio({
+        message,
+        audioBlob: captured.blob,
+        filename: `rider-voice.${extensionForMime(captured.mimeType)}`,
+      })
+      applyModelResult(data, setResult)
+      setStatus('Voice dispatch complete')
+      if (!message.trim()) {
+        setMessage('(Voice note processed)')
+      }
+    } catch (err) {
+      setError(err.message || 'Voice dispatch failed')
+      setResult(null)
+      setStatus('')
     } finally {
       setLoading(false)
     }
@@ -55,6 +125,9 @@ export default function Dashboard() {
 
   const showSafety = !result || result.kind === 'safety' || result.kind === 'unknown'
   const showWealth = !result || result.kind === 'expense' || result.kind === 'unknown'
+  const micLabel = recording
+    ? `Stop recording (${seconds}s)`
+    : 'Record voice note'
 
   return (
     <>
@@ -72,18 +145,36 @@ export default function Dashboard() {
             id="dispatch-input"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            disabled={recording}
             placeholder="Enter or speak text (e.g., 'Mwana I used 22k for fuel today' OR 'Terrible pothole on Jinja Road near traffic lights')"
           />
           <div className="composer-actions">
-            <button className="btn-primary" type="submit" disabled={loading || !message.trim()}>
+            <button
+              className="btn-primary"
+              type="submit"
+              disabled={loading || recording || !message.trim()}
+            >
               <Icon name="bolt" filled />
-              {loading ? 'Processing…' : 'Process with Gemma 4'}
+              {loading && !recording ? 'Processing…' : 'Process with Gemma 4'}
             </button>
-            <button className="btn-mic" type="button" aria-label="Voice input" title="Voice coming soon">
-              <Icon name="mic" filled />
+            <button
+              className={`btn-mic${recording ? ' recording' : ''}`}
+              type="button"
+              aria-label={micLabel}
+              title={micLabel}
+              disabled={loading && !recording}
+              onClick={handleMicClick}
+            >
+              <Icon name={recording ? 'stop' : 'mic'} filled />
             </button>
           </div>
         </form>
+        {recording && (
+          <p className="voice-status recording-status">
+            Recording… {seconds}s — tap mic to send to Gemma
+          </p>
+        )}
+        {!recording && status && <p className="voice-status">{status}</p>}
         {error && <p className="error-text">{error}</p>}
       </section>
 
