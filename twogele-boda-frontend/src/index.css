@@ -1,0 +1,38 @@
+:root {
+  --bg: #f3f0e8;
+  --surface: #fffdf8;
+  --ink: #1a1a1a;
+  --muted: #5c5a55;
+  --line: #d9d4c8;
+  --accent: #c45c1a;
+  --accent-ink: #fffdf8;
+  --ok: #1f6b3a;
+  --err: #9b1c1c;
+  --font: "Segoe UI", "Helvetica Neue", sans-serif;
+
+  font-family: var(--font);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button,
+textarea {
+  font: inherit;
+}
