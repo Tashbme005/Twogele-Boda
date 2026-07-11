@@ -105,26 +105,38 @@ async def chat_multimodal(
     track: Annotated[str | None, Form()] = None,
     audio: UploadFile | None = File(default=None),
 ) -> ChatResponse:
+    """Text + optional audio.
+
+    Note: gemma-4-26b-a4b-it on Google AI Studio accepts text/image, not raw
+    audio. If only audio is uploaded, return a clear 400. Prefer browser
+    speech-to-text → POST /chat for voice.
+    """
     if engine is None:
         raise HTTPException(status_code=503, detail="Model engine not ready")
 
     audio_bytes: bytes | None = None
-    audio_mime = "audio/wav"
     if audio is not None and audio.filename:
         audio_bytes = await audio.read()
-        audio_mime = audio.content_type or "audio/wav"
 
-    if not message.strip() and not audio_bytes:
+    text = message.strip()
+    if not text and audio_bytes:
         raise HTTPException(
             status_code=400,
-            detail="Provide a text message and/or an audio file.",
+            detail=(
+                "This Gemma 4 model does not accept raw audio over the API. "
+                "Use the mic button (browser speech-to-text) or type your message."
+            ),
+        )
+
+    if not text:
+        raise HTTPException(
+            status_code=400,
+            detail="Provide a text message (voice should be transcribed first).",
         )
 
     try:
         result = engine.generate(
-            message,
-            audio_bytes=audio_bytes,
-            audio_mime_type=audio_mime,
+            text,
             hint=_hint_for_track(track),
         )
     except Exception as exc:  # noqa: BLE001

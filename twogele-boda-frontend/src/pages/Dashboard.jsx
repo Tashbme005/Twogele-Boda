@@ -6,7 +6,6 @@ import MapView, { DEMAND_MARKERS, HAZARD_MARKERS } from '../components/MapView'
 import { useVoiceRecorder } from '../hooks/useVoiceRecorder'
 import {
   chatWithGemma,
-  chatWithGemmaAudio,
   classifyResponse,
   extractField,
   extractJsonBlock,
@@ -34,19 +33,14 @@ function applyModelResult(data, setResult) {
   })
 }
 
-function extensionForMime(mimeType = '') {
-  if (mimeType.includes('mp4')) return 'mp4'
-  if (mimeType.includes('ogg')) return 'ogg'
-  return 'webm'
-}
-
 export default function Dashboard() {
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
   const [result, setResult] = useState(null)
-  const { recording, supported, seconds, start, stop } = useVoiceRecorder()
+  const { recording, supported, seconds, liveTranscript, start, stop } =
+    useVoiceRecorder()
 
   async function handleProcess(event) {
     event.preventDefault()
@@ -74,7 +68,7 @@ export default function Dashboard() {
     if (loading) return
 
     if (!supported) {
-      setError('Voice recording is not supported in this browser. Try Chrome or Edge.')
+      setError('Voice input needs Chrome or Edge. Type your message instead.')
       return
     }
 
@@ -83,7 +77,7 @@ export default function Dashboard() {
     if (!recording) {
       try {
         await start()
-        setStatus('Listening… tap the mic again to send')
+        setStatus('Listening… speak now, then tap mic to send')
       } catch (err) {
         setError(
           err.name === 'NotAllowedError'
@@ -96,24 +90,25 @@ export default function Dashboard() {
     }
 
     setLoading(true)
-    setStatus('Sending voice note to Gemma 4…')
+    setStatus('Transcribing and sending to Gemma 4…')
 
     try {
       const captured = await stop()
-      if (!captured?.blob || captured.blob.size < 1) {
-        throw new Error('No audio captured. Hold a bit longer, then stop.')
+      if (captured?.error) {
+        throw new Error(captured.error)
       }
 
-      const data = await chatWithGemmaAudio({
-        message,
-        audioBlob: captured.blob,
-        filename: `rider-voice.${extensionForMime(captured.mimeType)}`,
-      })
+      const spoken = (captured?.transcript || liveTranscript || '').trim()
+      const combined = [message.trim(), spoken].filter(Boolean).join(' ').trim()
+
+      if (!combined) {
+        throw new Error('No speech captured. Tap mic, speak clearly, then tap again.')
+      }
+
+      setMessage(combined)
+      const data = await chatWithGemma(combined)
       applyModelResult(data, setResult)
       setStatus('Voice dispatch complete')
-      if (!message.trim()) {
-        setMessage('(Voice note processed)')
-      }
     } catch (err) {
       setError(err.message || 'Voice dispatch failed')
       setResult(null)
@@ -125,8 +120,9 @@ export default function Dashboard() {
 
   const showSafety = !result || result.kind === 'safety' || result.kind === 'unknown'
   const showWealth = !result || result.kind === 'expense' || result.kind === 'unknown'
+  const displayText = recording && liveTranscript ? liveTranscript : message
   const micLabel = recording
-    ? `Stop recording (${seconds}s)`
+    ? `Stop & send (${seconds}s)`
     : 'Record voice note'
 
   return (
@@ -143,7 +139,7 @@ export default function Dashboard() {
         <form onSubmit={handleProcess}>
           <textarea
             id="dispatch-input"
-            value={message}
+            value={displayText}
             onChange={(e) => setMessage(e.target.value)}
             disabled={recording}
             placeholder="Enter or speak text (e.g., 'Mwana I used 22k for fuel today' OR 'Terrible pothole on Jinja Road near traffic lights')"
@@ -171,7 +167,7 @@ export default function Dashboard() {
         </form>
         {recording && (
           <p className="voice-status recording-status">
-            Recording… {seconds}s — tap mic to send to Gemma
+            Listening… {seconds}s — tap mic to send transcript to Gemma
           </p>
         )}
         {!recording && status && <p className="voice-status">{status}</p>}

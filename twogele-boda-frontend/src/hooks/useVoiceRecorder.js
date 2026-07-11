@@ -1,68 +1,104 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-function pickMimeType() {
-  const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg']
-  return types.find((type) => window.MediaRecorder?.isTypeSupported?.(type)) || ''
+function getSpeechRecognition() {
+  if (typeof window === 'undefined') return null
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null
 }
 
 /**
- * Browser mic recorder for Twogele voice dispatch.
- * Click start → record → stop returns an audio Blob.
+ * Chrome speech-to-text for Twogele voice dispatch.
+ * Gemma 4 26B via AI Studio does not accept raw audio, so we transcribe
+ * in the browser and send text to /chat.
  */
 export function useVoiceRecorder() {
   const [recording, setRecording] = useState(false)
   const [supported, setSupported] = useState(true)
   const [seconds, setSeconds] = useState(0)
-  const mediaRecorderRef = useRef(null)
-  const chunksRef = useRef([])
-  const streamRef = useRef(null)
+  const [liveTranscript, setLiveTranscript] = useState('')
+  const recognitionRef = useRef(null)
   const timerRef = useRef(null)
+  const finalRef = useRef('')
   const stopResolverRef = useRef(null)
 
   useEffect(() => {
-    setSupported(Boolean(navigator.mediaDevices?.getUserMedia && window.MediaRecorder))
+    setSupported(Boolean(getSpeechRecognition()))
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current)
-      streamRef.current?.getTracks().forEach((track) => track.stop())
+      try {
+        recognitionRef.current?.stop()
+      } catch {
+        /* ignore */
+      }
     }
   }, [])
 
   const start = useCallback(async () => {
-    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-      throw new Error('Voice recording is not supported in this browser.')
+    const SpeechRecognition = getSpeechRecognition()
+    if (!SpeechRecognition) {
+      throw new Error(
+        'Voice input needs Chrome or Edge speech recognition. Type your message instead.',
+      )
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    streamRef.current = stream
-    chunksRef.current = []
-
-    const mimeType = pickMimeType()
-    const recorder = mimeType
-      ? new MediaRecorder(stream, { mimeType })
-      : new MediaRecorder(stream)
-
-    mediaRecorderRef.current = recorder
-
-    recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) chunksRef.current.push(event.data)
-    }
-
-    recorder.onstop = () => {
-      const type = recorder.mimeType || mimeType || 'audio/webm'
-      const blob = new Blob(chunksRef.current, { type })
+    // Mic permission probe (clearer errors than SpeechRecognition alone)
+    if (navigator.mediaDevices?.getUserMedia) {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       stream.getTracks().forEach((track) => track.stop())
-      streamRef.current = null
+    }
+
+    finalRef.current = ''
+    setLiveTranscript('')
+    setSeconds(0)
+
+    const recognition = new SpeechRecognition()
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = 'en-UG'
+    recognition.maxAlternatives = 1
+
+    recognition.onresult = (event) => {
+      let interim = ''
+      let finalText = finalRef.current
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const piece = event.results[i][0].transcript
+        if (event.results[i].isFinal) {
+          finalText = `${finalText} ${piece}`.trim()
+        } else {
+          interim += piece
+        }
+      }
+      finalRef.current = finalText
+      setLiveTranscript(`${finalText} ${interim}`.trim())
+    }
+
+    recognition.onerror = (event) => {
+      const message =
+        event.error === 'not-allowed'
+          ? 'Microphone permission denied. Allow mic access and try again.'
+          : event.error === 'no-speech'
+            ? 'No speech detected. Try again closer to the mic.'
+            : `Voice error: ${event.error}`
+      stopResolverRef.current?.({ transcript: finalRef.current, error: message })
+      stopResolverRef.current = null
+      setRecording(false)
+      if (timerRef.current) {
+        window.clearInterval(timerRef.current)
+        timerRef.current = null
+      }
+    }
+
+    recognition.onend = () => {
       if (timerRef.current) {
         window.clearInterval(timerRef.current)
         timerRef.current = null
       }
       setRecording(false)
-      stopResolverRef.current?.({ blob, mimeType: type })
+      stopResolverRef.current?.({ transcript: finalRef.current.trim() })
       stopResolverRef.current = null
     }
 
-    recorder.start()
-    setSeconds(0)
+    recognitionRef.current = recognition
+    recognition.start()
     setRecording(true)
     timerRef.current = window.setInterval(() => {
       setSeconds((value) => value + 1)
@@ -70,16 +106,22 @@ export function useVoiceRecorder() {
   }, [])
 
   const stop = useCallback(() => {
-    const recorder = mediaRecorderRef.current
-    if (!recorder || recorder.state === 'inactive') {
-      return Promise.resolve(null)
+    const recognition = recognitionRef.current
+    if (!recognition) {
+      return Promise.resolve({ transcript: '' })
     }
 
     return new Promise((resolve) => {
       stopResolverRef.current = resolve
-      recorder.stop()
+      try {
+        recognition.stop()
+      } catch {
+        resolve({ transcript: finalRef.current.trim() })
+        stopResolverRef.current = null
+        setRecording(false)
+      }
     })
   }, [])
 
-  return { recording, supported, seconds, start, stop }
+  return { recording, supported, seconds, liveTranscript, start, stop }
 }
