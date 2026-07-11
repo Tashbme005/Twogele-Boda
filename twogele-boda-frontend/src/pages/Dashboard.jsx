@@ -10,6 +10,7 @@ import {
   classifyResponse,
   extractField,
   extractJsonBlock,
+  replyPreview,
 } from '../lib/api'
 import { useAuth } from '../lib/AuthContext'
 import '../styles/pages.css'
@@ -135,8 +136,8 @@ function moneyRows(json, t) {
 }
 
 function applyModelResult(data, setResult) {
-  const response = data.response || data.raw || ''
-  const kind = classifyResponse(response)
+  const response = (data.response || data.raw || '').trim()
+  const kind = classifyResponse(response, data.category)
   setResult({
     kind,
     response,
@@ -257,6 +258,7 @@ export default function Dashboard() {
   const displayText = recording && liveTranscript ? liveTranscript : message
   const micLabel = recording ? t('stopSend', { seconds }) : t('speakWithMic')
   const moneyList = moneyRows(result?.json, t)
+  const replyText = result ? replyPreview(result.response) || result.response : ''
 
   return (
     <>
@@ -323,6 +325,13 @@ export default function Dashboard() {
         {!recording && status && <p className="voice-status">{status}</p>}
         {error && <p className="error-text">{error}</p>}
       </section>
+
+      {result && replyText && (
+        <section className="panel reply-panel" aria-live="polite">
+          <p className="panel-label">{t('gemmaReply')}</p>
+          <p className="reply-body">{replyText}</p>
+        </section>
+      )}
 
       <div className="tracks">
         {showSafety && (

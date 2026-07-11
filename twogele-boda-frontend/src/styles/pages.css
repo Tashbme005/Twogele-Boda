@@ -320,6 +320,23 @@
   margin-top: 0.85rem;
 }
 
+.reply-panel {
+  margin-top: 1rem;
+  border-left: 0.35rem solid var(--primary-container);
+}
+
+.reply-panel .panel-label {
+  margin-bottom: 0.45rem;
+}
+
+.reply-body {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.55;
+  color: var(--on-surface);
+  font-size: 1rem;
+}
+
 .prompt-chips .panel-label {
   margin-bottom: 0.45rem;
 }

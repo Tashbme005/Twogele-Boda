@@ -44,9 +44,12 @@ export async function chatWithGemmaAudio({ message = '', audioBlob, filename = '
   return res.json()
 }
 
-export function classifyResponse(text = '') {
+export function classifyResponse(text = '', categoryHint) {
+  if (categoryHint === 'safety' || categoryHint === 'expense') return categoryHint
+
   const lower = text.toLowerCase()
   const looksSafety =
+    lower.includes('hazard type') ||
     lower.includes('hazard') ||
     lower.includes('urgency') ||
     lower.includes('responsible body') ||
@@ -56,7 +59,7 @@ export function classifyResponse(text = '') {
     lower.includes('fuel expenses') ||
     lower.includes('income saved') ||
     lower.includes('daily expenses') ||
-    /\{[\s\S]*\}/.test(text)
+    /"fuel expenses"|"income saved"|"daily expenses"/i.test(text)
 
   if (looksSafety && !looksExpense) return 'safety'
   if (looksExpense && !looksSafety) return 'expense'
@@ -66,7 +69,9 @@ export function classifyResponse(text = '') {
 }
 
 export function extractJsonBlock(text = '') {
-  const match = text.match(/\{[\s\S]*\}/)
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)
+  const candidate = fenced ? fenced[1] : text
+  const match = candidate.match(/\{[\s\S]*\}/)
   if (!match) return null
   try {
     return JSON.parse(match[0])
@@ -76,7 +81,21 @@ export function extractJsonBlock(text = '') {
 }
 
 export function extractField(text, label) {
-  const re = new RegExp(`${label}\\s*[:：]\\s*(.+)`, 'i')
+  const re = new RegExp(
+    `(?:^|\\n)\\s*[*•\\-]?\\s*\\*?\\*?${label}\\*?\\*?\\s*[:：]\\s*(.+)`,
+    'i',
+  )
   const match = text.match(re)
-  return match ? match[1].trim().replace(/^\*+\s*/, '') : null
+  return match ? match[1].trim().replace(/^\*+\s*/, '').replace(/\*+$/, '') : null
+}
+
+export function replyPreview(text = '') {
+  return text
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/^\s*[*•\-]\s*\*?\*?Hazard Type\*?\*?.*$/gim, '')
+    .replace(/^\s*[*•\-]\s*\*?\*?Location\*?\*?.*$/gim, '')
+    .replace(/^\s*[*•\-]\s*\*?\*?Urgency\*?\*?.*$/gim, '')
+    .replace(/^\s*[*•\-]\s*\*?\*?Responsible Body\*?\*?.*$/gim, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 }
