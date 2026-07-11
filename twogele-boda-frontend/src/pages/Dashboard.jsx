@@ -14,6 +14,105 @@ import {
 import { useAuth } from '../lib/AuthContext'
 import '../styles/pages.css'
 
+const TEST_PROMPTS = {
+  en: [
+    {
+      id: 'pothole',
+      label: 'Pothole · Clock Tower',
+      text: 'There is a huge pothole near Clock Tower on Entebbe Road. Bodas are swerving into oncoming traffic.',
+    },
+    {
+      id: 'accident',
+      label: 'Accident · Nakawa',
+      text: 'Mwana accident ebadde ku Jinja Road near Nakawa stage, boda yagwa badly, guy needs help now!',
+    },
+    {
+      id: 'flood',
+      label: 'Flood · Makerere',
+      text: 'Waliwo amazzi mangi ku Makerere Hill Road, road egaze completely, tekiyisa.',
+    },
+    {
+      id: 'fuel',
+      label: 'Fuel + save',
+      text: 'I spent 25k on fuel today and saved 40k from my trips.',
+    },
+    {
+      id: 'tips',
+      label: 'Tips day',
+      text: 'Mwana today tip zange zaali 80k, fuel 15k, daily expenses 10k, nateeka 55k.',
+    },
+    {
+      id: 'invest',
+      label: 'Save & invest',
+      text: 'This month I saved 500000 UGX after fuel and daily costs. What can I invest in?',
+    },
+  ],
+  lg: [
+    {
+      id: 'pothole',
+      label: 'Kifo · Clock Tower',
+      text: 'Waliwo ekifo kinene okumpi ne Clock Tower ku Entebbe Road. Bodas zevuddemu mu traffic.',
+    },
+    {
+      id: 'accident',
+      label: 'Accident · Nakawa',
+      text: 'Mwana accident ebadde ku Jinja Road near Nakawa stage, boda yagwa badly, guy needs help now!',
+    },
+    {
+      id: 'flood',
+      label: 'Amazzi · Makerere',
+      text: 'Waliwo amazzi mangi ku Makerere Hill Road, road egaze completely, tekiyisa.',
+    },
+    {
+      id: 'fuel',
+      label: 'Petrol + tereka',
+      text: 'Nkozesezza 25k ku petrol leero era nateeka 40k okuva ku trips.',
+    },
+    {
+      id: 'tips',
+      label: 'Tips leero',
+      text: 'Mwana today tip zange zaali 80k, fuel 15k, daily expenses 10k, nateeka 55k.',
+    },
+    {
+      id: 'invest',
+      label: 'Tereka & invest',
+      text: 'Omwezi guno nateeka 500000 UGX oluvannyuma lwa petrol n’ebisasanyizo. Nnakola ki ku ssente?',
+    },
+  ],
+  sw: [
+    {
+      id: 'pothole',
+      label: 'Shimo · Clock Tower',
+      text: 'Kuna shimo kubwa karibu na Clock Tower kwenye Entebbe Road. Boda zinapinda katika traffic.',
+    },
+    {
+      id: 'accident',
+      label: 'Ajali · Nakawa',
+      text: 'Mwana accident ebadde ku Jinja Road near Nakawa stage, boda yagwa badly, guy needs help now!',
+    },
+    {
+      id: 'flood',
+      label: 'Mafuriko · Makerere',
+      text: 'Kuna maji mengi Makerere Hill Road, barabara imefungwa kabisa.',
+    },
+    {
+      id: 'fuel',
+      label: 'Mafuta + weka',
+      text: 'Nimetumia 25k mafuta leo na nimeweka 40k kutoka trips.',
+    },
+    {
+      id: 'tips',
+      label: 'Tips leo',
+      text: 'Mwana today tip zange zaali 80k, fuel 15k, daily expenses 10k, nateeka 55k.',
+    },
+    {
+      id: 'invest',
+      label: 'Weka & invest',
+      text: 'Mwezi huu nimeweka 500000 UGX baada ya mafuta na gharama. Ninaweza kuwekeza wapi?',
+    },
+  ],
+}
+
 function simpleUrgency(raw, t) {
   const text = (raw || '').toLowerCase()
   if (text.includes('critical') || text.includes('high')) return t('urgent')
@@ -61,6 +160,8 @@ export default function Dashboard() {
   const { recording, supported, seconds, liveTranscript, start, stop } =
     useVoiceRecorder(speechLang)
 
+  const prompts = TEST_PROMPTS[language] || TEST_PROMPTS.en
+
   const saveIdeas =
     language === 'lg'
       ? ['SACCO ya boda', 'Tereka ku MTN/Airtel', 'Enteekateeka za gavumenti']
@@ -72,17 +173,17 @@ export default function Dashboard() {
             'Government save plans',
           ]
 
-  async function handleProcess(event) {
-    event.preventDefault()
-    const text = message.trim()
-    if (!text || loading || recording) return
+  async function runPrompt(text) {
+    const trimmed = text.trim()
+    if (!trimmed || loading || recording) return
 
+    setMessage(trimmed)
     setLoading(true)
     setError('')
     setStatus(t('pleaseWaitReading'))
 
     try {
-      const data = await chatWithGemma(text, { riderId, language })
+      const data = await chatWithGemma(trimmed, { riderId, language })
       applyModelResult(data, setResult)
       setStatus(t('done'))
     } catch (err) {
@@ -92,6 +193,11 @@ export default function Dashboard() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleProcess(event) {
+    event.preventDefault()
+    await runPrompt(message)
   }
 
   async function handleMicClick() {
@@ -192,6 +298,25 @@ export default function Dashboard() {
             </button>
           </div>
         </form>
+
+        <div className="prompt-chips">
+          <p className="panel-label">{t('tryThese')}</p>
+          <div className="chips">
+            {prompts.map((item) => (
+              <button
+                key={item.id}
+                className="chip prompt-chip"
+                type="button"
+                title={item.text}
+                disabled={loading || recording}
+                onClick={() => runPrompt(item.text)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {recording && (
           <p className="voice-status recording-status">{t('listening', { seconds })}</p>
         )}

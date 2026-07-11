@@ -62,6 +62,7 @@ const dict = {
     tellWhatHappened: 'Tell us what happened — type or speak',
     placeholderDispatch:
       "Example: 'Mwana I used 22k for fuel today' or 'Bad pothole on Jinja Road near the lights'",
+    tryThese: 'Try a test prompt',
     send: 'Send',
     pleaseWait: 'Please wait…',
     pleaseWaitReading: 'Please wait… reading your message',
@@ -198,6 +199,7 @@ const dict = {
     tellWhatHappened: 'Tubuulire ekyabaddewo — wandika oba yogera',
     placeholderDispatch:
       "Ekyokulabirako: 'Mwana nkozesezza 22k ku petrol leero' oba 'Kifo kibi ku Jinja Road okumpi n’amasanyu'",
+    tryThese: 'Gezaako prompt eyokugezesa',
     send: 'Sindika',
     pleaseWait: 'Lindawo…',
     pleaseWaitReading: 'Lindawo… nsomye obubaka bwo',
@@ -334,6 +336,7 @@ const dict = {
     tellWhatHappened: 'Tuambie kilichotokea — andika au sema',
     placeholderDispatch:
       "Mfano: 'Mwana nimetumia 22k mafuta leo' au 'Shimo baya Jinja Road karibu na taa'",
+    tryThese: 'Jaribu prompt ya majaribio',
     send: 'Tuma',
     pleaseWait: 'Subiri…',
     pleaseWaitReading: 'Subiri… ninasoma ujumbe wako',

@@ -316,6 +316,34 @@
   font-weight: 600;
 }
 
+.prompt-chips {
+  margin-top: 0.85rem;
+}
+
+.prompt-chips .panel-label {
+  margin-bottom: 0.45rem;
+}
+
+button.chip.prompt-chip {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  max-width: 100%;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+button.chip.prompt-chip:hover:not(:disabled) {
+  background: var(--primary-container);
+  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+  color: var(--on-primary-container);
+}
+
+button.chip.prompt-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .section {
   margin-top: 1.75rem;
 }
