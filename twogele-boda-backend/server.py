@@ -10,6 +10,7 @@ from typing import Annotated, Any
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from agent.model_engine import ModelEngine
@@ -136,6 +137,153 @@ def _persist(user_message: str, result: dict[str, Any], source: str, rider_id: s
         return {"id": None, "category": None}
     finally:
         session.close()
+
+
+@app.get("/", response_class=HTMLResponse)
+def home() -> str:
+    model_name = os.getenv("GEMMA_MODEL", "gemma-4-26b-a4b-it")
+    model_ok = "ready" if engine is not None else "starting"
+    db_label = "connected" if db_ready else "not connected"
+    db_tone = "#0f766e" if db_ready else "#b45309"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Twogele Boda API</title>
+  <style>
+    :root {{
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --teal: #14b8a6;
+      --teal-dark: #0f766e;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at top left, #134e4a 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, #1e3a5f 0%, transparent 45%),
+        var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+    }}
+    main {{
+      width: min(34rem, 100%);
+      background: color-mix(in srgb, var(--card) 88%, transparent);
+      border: 1px solid #334155;
+      border-radius: 1.25rem;
+      padding: 2rem 1.75rem;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }}
+    .badge {{
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(20, 184, 166, 0.15);
+      color: var(--teal);
+      border: 1px solid rgba(20, 184, 166, 0.35);
+      border-radius: 999px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }}
+    .dot {{
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2);
+      animation: pulse 1.6s ease-in-out infinite;
+    }}
+    @keyframes pulse {{
+      50% {{ opacity: 0.45; transform: scale(0.9); }}
+    }}
+    h1 {{
+      margin: 1rem 0 0.4rem;
+      font-size: clamp(1.6rem, 4vw, 2rem);
+      line-height: 1.15;
+    }}
+    p {{
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }}
+    .status {{
+      margin: 1.35rem 0;
+      display: grid;
+      gap: 0.65rem;
+    }}
+    .row {{
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 0.9rem;
+      background: rgba(15, 23, 42, 0.55);
+      border-radius: 0.75rem;
+      border: 1px solid #334155;
+      font-size: 0.95rem;
+    }}
+    .row strong {{ color: var(--text); font-weight: 600; }}
+    .ok {{ color: {db_tone}; }}
+    .links {{
+      display: grid;
+      gap: 0.65rem;
+      margin-top: 1.25rem;
+    }}
+    a {{
+      display: block;
+      text-decoration: none;
+      color: var(--text);
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      text-align: center;
+      padding: 0.8rem 1rem;
+      border-radius: 0.75rem;
+      font-weight: 650;
+    }}
+    a.secondary {{
+      background: transparent;
+      border: 1px solid #475569;
+      color: #e2e8f0;
+    }}
+    footer {{
+      margin-top: 1.4rem;
+      font-size: 0.8rem;
+      color: #64748b;
+      text-align: center;
+    }}
+  </style>
+</head>
+<body>
+  <main>
+    <span class="badge"><span class="dot" aria-hidden="true"></span> API is working</span>
+    <h1>Twogele Boda Backend</h1>
+    <p>
+      This is the server for Kampala boda riders — road danger help and money tracking,
+      powered by Gemma.
+    </p>
+    <div class="status">
+      <div class="row"><span>Service</span><strong>online</strong></div>
+      <div class="row"><span>AI model</span><strong>{model_ok} · {model_name}</strong></div>
+      <div class="row"><span>Database</span><strong class="ok">{db_label}</strong></div>
+    </div>
+    <div class="links">
+      <a href="/health">Check health (JSON)</a>
+      <a class="secondary" href="/docs">Open API docs</a>
+      <a class="secondary" href="/history?limit=5">View recent history</a>
+    </div>
+    <footer>https://twogele-boda-backend.onrender.com</footer>
+  </main>
+</body>
+</html>"""
 
 
 @app.get("/health")
