@@ -31,7 +31,6 @@ export default function Layout() {
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_KEY, String(sidebarOpen))
-    // Let Leaflet maps reflow after content width changes.
     const t = window.setTimeout(() => window.dispatchEvent(new Event('resize')), 240)
     return () => window.clearTimeout(t)
   }, [sidebarOpen])
@@ -39,21 +38,9 @@ export default function Layout() {
   return (
     <div className={`shell${sidebarOpen ? '' : ' sidebar-collapsed'}`}>
       <header className="topbar">
-        <div className="topbar-left">
-          <button
-            className="icon-btn sidebar-toggle"
-            type="button"
-            aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-            aria-expanded={sidebarOpen}
-            aria-controls="rider-sidebar"
-            onClick={() => setSidebarOpen((open) => !open)}
-          >
-            <Icon name={sidebarOpen ? 'menu_open' : 'menu'} />
-          </button>
-          <div className="brand">
-            <Icon name="moped" filled />
-            <span>Twogele Boda AI</span>
-          </div>
+        <div className="brand">
+          <Icon name="moped" filled />
+          <span>Twogele Boda AI</span>
         </div>
         <div className="topbar-actions">
           <div className={`status-pill ${emergency ? 'warn' : ''}`}>
@@ -74,8 +61,22 @@ export default function Layout() {
         className={`sidebar${sidebarOpen ? ' is-open' : ' is-closed'}`}
         aria-hidden={!sidebarOpen}
       >
-        <h2 className="sidebar-title">Rider Portal</h2>
-        <p className="sidebar-sub">Kampala District</p>
+        <div className="sidebar-head">
+          <div>
+            <h2 className="sidebar-title">Rider Portal</h2>
+            <p className="sidebar-sub">Kampala District</p>
+          </div>
+          <button
+            className="icon-btn sidebar-toggle"
+            type="button"
+            aria-label="Hide sidebar"
+            aria-expanded={sidebarOpen}
+            aria-controls="rider-sidebar"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <Icon name="chevron_left" />
+          </button>
+        </div>
         <nav>
           {NAV.map((item) => (
             <NavLink
@@ -100,6 +101,19 @@ export default function Layout() {
           </div>
         </div>
       </aside>
+
+      {!sidebarOpen && (
+        <button
+          className="sidebar-reopen"
+          type="button"
+          aria-label="Show sidebar"
+          aria-expanded={false}
+          aria-controls="rider-sidebar"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <Icon name="chevron_right" />
+        </button>
+      )}
 
       <main className="content">
         <Outlet />
